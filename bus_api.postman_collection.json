@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "Bus Transport API",
+    "_postman_id": "dummy-id",
+    "description": "Colecci\u00f3n para probar la API de transporte de pasajeros",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Listar Servicios",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/services?origin=Santiago&destination=Valpara\u00edso&date=2025-06-01",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "services"
+          ],
+          "query": [
+            {
+              "key": "origin",
+              "value": "Santiago"
+            },
+            {
+              "key": "destination",
+              "value": "Valpara\u00edso"
+            },
+            {
+              "key": "date",
+              "value": "2025-06-01"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Ver Asientos del Servicio",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/seats/{{serviceId}}",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "seats",
+            "{{serviceId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Reservar Asiento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"seatNumber\": \"1\", \"userId\": \"usuario123\"}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/seats/{{serviceId}}/reserve",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "seats",
+            "{{serviceId}}",
+            "reserve"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Confirmar Asiento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"seatNumber\": \"1\", \"authCode\": \"AUTH123\", \"userId\": \"usuario123\"}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/seats/{{serviceId}}/confirm",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "seats",
+            "{{serviceId}}",
+            "confirm"
+          ]
+        }
+      }
+    }
+  ]
+}

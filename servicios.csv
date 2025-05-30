@@ -1,0 +1,3 @@
+origin,destination,startDate,days,time,busLayout,price
+Santiago,Linares,2025-06-01,"[1,2,3,4,5,6,7]",10:30,bus_42_seats,8000
+Valparaíso,Talca,2025-06-01,"[1,5,7]",20:00,doubleDecker50,12000

@@ -1,0 +1,23 @@
+{
+  "name": "bus_project",
+  "version": "1.0.0",
+  "description": "Sistema de backend para servicios de transporte de pasajeros",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js"
+  },
+  "keywords": [],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "moment": "^2.30.1",
+    "mongoose": "^7.6.1",
+    "multer": "^2.0.0",
+    "node-cron": "^3.0.3"
+  }
+}
