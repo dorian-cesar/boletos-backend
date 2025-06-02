@@ -15,7 +15,8 @@ mongoose.connect(mongoURI)
       destination: "Rancagua",
       time: "9:00",
       days: [ 1, 2, 3, 4, 5, 6, 7], // Domingo a sábado
-      busLayout: "bus_42_seats"
+      busLayout: "bus_42_seats",
+      price: 3000
     });
 
     await template.save();

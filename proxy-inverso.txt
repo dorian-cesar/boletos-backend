@@ -1,0 +1,96 @@
+✅ 1. Apunta tu subdominio a la IP pública (Cloudflare DNS)
+Primero, asegúrate de que boletos.dev-wit.com apunte a tu IP pública (54.88.124.28):
+
+Entra a tu cuenta de Cloudflare.
+
+Ve a la configuración del dominio dev-wit.com.
+
+En la pestaña DNS, agrega un nuevo registro:
+
+Tipo: A
+
+Nombre: boletos
+
+IPv4: 54.88.124.28
+
+Proxy status: Desactivado (DNS only) (ícono gris), ya que Cloudflare no proxea puertos distintos a 80 y 443.
+
+⚠️ Si usas el puerto 3000, Cloudflare no puede hacer proxy; por eso necesitas acceso directo vía IP o usar un reverse proxy en el puerto 80 o 443 (ver paso 4).
+
+✅ 2. Verifica que Lightsail tenga habilitado el puerto 3000
+En la consola de AWS Lightsail:
+
+Ve a tu instancia > Networking.
+
+Agrega una regla al firewall para el puerto 3000 (TCP) si no está abierta.
+
+✅ 3. (Opcional pero recomendado) Usa un subdominio específico para la API
+Si quieres que la API esté accesible como:
+
+ruby
+Copiar
+Editar
+http://boletos.dev-wit.com/api/services/all
+entonces necesitas configurar un reverse proxy con Nginx o Apache para redirigir las peticiones a localhost:3000.
+
+✅ 4. Configurar un Reverse Proxy con Bitnami Apache
+Bitnami normalmente viene con Apache preinstalado. Aquí cómo configurar el proxy:
+
+🔧 Edita el archivo de configuración de Apache:
+bash
+Copiar
+Editar
+sudo nano /opt/bitnami/apache2/conf/bitnami/bitnami.conf
+Agrega dentro del <VirtualHost _default_:80>:
+
+apache
+Copiar
+Editar
+<VirtualHost _default_:80>
+  ServerName boletos.dev-wit.com
+
+  ProxyPreserveHost On
+  ProxyPass / http://127.0.0.1:3000/
+  ProxyPassReverse / http://127.0.0.1:3000/
+
+  # Puedes limitar solo /api/ si deseas:
+  # ProxyPass /api/ http://127.0.0.1:3000/api/
+  # ProxyPassReverse /api/ http://127.0.0.1:3000/api/
+</VirtualHost>
+Habilita los módulos de proxy si aún no están habilitados:
+bash
+Copiar
+Editar
+sudo /opt/bitnami/apache2/bin/apachectl -M | grep proxy
+Si no están, edita /opt/bitnami/apache2/conf/httpd.conf y descomenta o añade:
+
+apache
+Copiar
+Editar
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+Reinicia Apache:
+bash
+Copiar
+Editar
+sudo /opt/bitnami/ctlscript.sh restart apache
+✅ 5. Espera a que DNS propague
+Puedes verificar la propagación con:
+
+bash
+Copiar
+Editar
+nslookup boletos.dev-wit.com
+o
+
+bash
+Copiar
+Editar
+ping boletos.dev-wit.com
+✅ 6. Prueba tu API
+Una vez hecho todo, puedes acceder a tu endpoint desde el navegador o Postman:
+
+ruby
+Copiar
+Editar
+http://boletos.dev-wit.com/api/services/all
