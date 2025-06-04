@@ -31,8 +31,10 @@ router.get('/all', async (req, res) => {
   }
 });
 
+
+
 // Revertir asiento reservado
-router.post('/revert-seat', async (req, res) => {
+router.patch('/revert-seat', async (req, res) => {
     const { serviceId, seatNumber } = req.body;
 
     if (!serviceId || !seatNumber) {
@@ -60,4 +62,8 @@ router.post('/revert-seat', async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
+
+
+
+
 module.exports = router;

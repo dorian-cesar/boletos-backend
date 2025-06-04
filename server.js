@@ -5,6 +5,8 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config();
 
+
+
 const servicesRoutes = require('./routes/services');
 const seatsRoutes = require('./routes/seats');
 const layoutsRoutes = require('./routes/layouts');
@@ -23,13 +25,14 @@ app.use('/api/layouts', layoutsRoutes);
 app.use('/api/templates', templatesRoutes);
 app.use('/api', uploadServicesRoutes);
 
+const MONGO_URI = process.env.MONGO_URI;
 
-
-mongoose.connect('mongodb://localhost:27017/bus_transport', {
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
     console.log("✅ Conectado a MongoDB");
+    console.log(MONGO_URI);
     startScheduler();
     app.listen(3000, () => console.log('🚍 Servidor corriendo en puerto 3000'));
 }).catch(err => {
