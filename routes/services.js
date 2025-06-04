@@ -32,7 +32,7 @@ router.get('/all', async (req, res) => {
 });
 
 // Revertir asiento reservado
-router.patch('/revert-seat', async (req, res) => {
+router.post('/revert-seat', async (req, res) => {
     const { serviceId, seatNumber } = req.body;
 
     if (!serviceId || !seatNumber) {
