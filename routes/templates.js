@@ -14,7 +14,8 @@ router.post('/create', async (req, res) => {
             days,      // array de días: [1, 2, 3, 4, 5, 6, 7]
             time,      // formato: 'HH:mm'
             busLayout,
-            price
+            price,
+            company
         } = req.body;
 
         // Validación básica
@@ -43,7 +44,8 @@ router.post('/create', async (req, res) => {
             days,
             time,
             busLayout,
-            price
+            price,
+            company
         });
 
         // Generar servicios iniciales a partir de la fecha de inicio
@@ -82,7 +84,8 @@ router.post('/create', async (req, res) => {
                         departureTime: time,
                         layout: busLayout,
                         seats,
-                        price
+                        price,
+                        company
                     });
                 }
             }

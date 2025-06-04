@@ -41,7 +41,8 @@ const generateServices = async () => {
                     departureTime: tpl.time,
                     layout: tpl.busLayout,
                     seats,
-                    price: tpl.price
+                    price: tpl.price,
+                    company: tpl.company
                 });
             }
         }

@@ -43,7 +43,8 @@ const generateFromTemplate = async (template, startDate, daysToGenerate = 14) =>
                 departureTime: template.time,
                 layout: template.busLayout,
                 seats,
-                price: template.price
+                price: template.price,
+                company: template.company
             });
         }
     }
@@ -65,7 +66,8 @@ router.post('/upload-services', upload.single('file'), async (req, res) => {
                     days: parsedDays,
                     time: row.time,
                     busLayout: row.busLayout,
-                    price: parseInt(row.price, 10)
+                    price: parseInt(row.price, 10),
+                    company: row.company
                 });
             } catch (err) {
                 console.error("Error procesando fila:", row, err.message);

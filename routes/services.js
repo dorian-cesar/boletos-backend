@@ -18,6 +18,7 @@ router.get('/', async (req, res) => {
         date: s.date,
         departureTime: s.departureTime,
         price: s.price, // ✅ Agrega esto
+        company:s.company,
         availableSeats: s.seats.filter(seat => seat.status === 'available').length
     })));
 });
