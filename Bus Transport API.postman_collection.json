@@ -1,0 +1,147 @@
+{
+	"info": {
+		"_postman_id": "0ef20b00-39ac-485b-a6d8-efb77b1745b0",
+		"name": "Bus Transport API",
+		"description": "Colección para probar la API de transporte de pasajeros",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "14119178"
+	},
+	"item": [
+		{
+			"name": "Listar Servicios",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://boletos.dev-wit.com/api/services?origin=Santiago&destination=Rengo&date=2025-06-03",
+					"protocol": "https",
+					"host": [
+						"boletos",
+						"dev-wit",
+						"com"
+					],
+					"path": [
+						"api",
+						"services"
+					],
+					"query": [
+						{
+							"key": "origin",
+							"value": "Santiago"
+						},
+						{
+							"key": "destination",
+							"value": "Rengo"
+						},
+						{
+							"key": "date",
+							"value": "2025-06-03"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ver Asientos del Servicio",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "https://boletos.dev-wit.com/api/seats/{{serviceId}}"
+			},
+			"response": []
+		},
+		{
+			"name": "Reservar Asiento",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"seatNumber\": \"1\", \"userId\": \"usuario123\"}"
+				},
+				"url": "https://boletos.dev-wit.com/api/seats/{{serviceId}}/reserve"
+			},
+			"response": []
+		},
+		{
+			"name": "Confirmar Asiento",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"seatNumber\": \"1\", \"authCode\": \"AUTH123\", \"userId\": \"usuario123\"}"
+				},
+				"url": "https://boletos.dev-wit.com/api/seats/{{serviceId}}/confirm"
+			},
+			"response": []
+		},
+		{
+			"name": "Crear Servicio",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"origin\": \"Santiago\",\r\n  \"destination\": \"Rengo\",\r\n  \"startDate\": \"2025-06-01\",\r\n  \"days\": [1, 2, 3, 4, 5, 6, 7],\r\n  \"time\": \"08:30\",\r\n  \"busLayout\": \"bus_42_seats\",\r\n  \"price\": 9000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "https://boletos.dev-wit.com/api/templates/create"
+			},
+			"response": []
+		},
+		{
+			"name": "upload-services",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "postman-cloud:///1f03d782-9478-4c10-a3c3-b9b79d371ab7"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://boletos.dev-wit.com/api/upload-services",
+					"protocol": "https",
+					"host": [
+						"boletos",
+						"dev-wit",
+						"com"
+					],
+					"path": [
+						"api",
+						"upload-services"
+					],
+					"query": [
+						{
+							"key": "file",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
