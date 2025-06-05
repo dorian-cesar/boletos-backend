@@ -5,7 +5,9 @@ const GeneratedService = require('../models/GeneratedService');
 const moment = require('moment');
 const layoutData = require('../layout.json');
 
-router.post('/create', async (req, res) => {
+const verifyToken = require('../middlewares/auth');
+
+router.post('/create', verifyToken, async (req, res) => {
     try {
         const {
             origin,

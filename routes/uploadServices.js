@@ -7,6 +7,8 @@ const ServiceTemplate = require('../models/ServiceTemplate');
 const GeneratedService = require('../models/GeneratedService');
 const layoutData = require('../layout.json');
 
+const verifyToken = require('../middlewares/auth');
+
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
@@ -50,7 +52,7 @@ const generateFromTemplate = async (template, startDate, daysToGenerate = 14) =>
     }
 };
 
-router.post('/upload-services', upload.single('file'), async (req, res) => {
+router.post('/upload-services',verifyToken, upload.single('file'), async (req, res) => {
     const filePath = req.file.path;
     const templates = [];
 

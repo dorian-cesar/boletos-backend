@@ -3,6 +3,8 @@ const router = express.Router();
 const GeneratedService = require('../models/GeneratedService');
 const { holdSeat, confirmSeat } = require('../utils/seatManager');
 
+const verifyToken = require('../middlewares/auth');
+
 router.get('/:serviceId', async (req, res) => {
     const service = await GeneratedService.findById(req.params.serviceId);
     if (!service) return res.status(404).json({ error: 'Servicio no encontrado' });
@@ -10,7 +12,7 @@ router.get('/:serviceId', async (req, res) => {
     res.json(service.seats);
 });
 
-router.post('/:serviceId/reserve', async (req, res) => {
+router.post('/:serviceId/reserve',verifyToken, async (req, res) => {
     const { seatNumber, userId } = req.body;
 
     try {
@@ -21,7 +23,7 @@ router.post('/:serviceId/reserve', async (req, res) => {
     }
 });
 
-router.post('/:serviceId/confirm', async (req, res) => {
+router.post('/:serviceId/confirm', verifyToken, async (req, res) => {
     const { seatNumber, userId, authCode } = req.body;
 
     try {

@@ -19,7 +19,8 @@ router.get('/', async (req, res) => {
         departureTime: s.departureTime,
         price: s.price, // ✅ Agrega esto
         company:s.company,
-        availableSeats: s.seats.filter(seat => seat.status === 'available').length
+        availableSeats: s.seats.filter(seat => seat.status === 'available').length,
+        layout: s.layout
     })));
 });
 
@@ -32,10 +33,10 @@ router.get('/all', async (req, res) => {
   }
 });
 
-
+const verifyToken = require('../middlewares/auth');
 
 // Revertir asiento reservado
-router.patch('/revert-seat', async (req, res) => {
+router.patch('/revert-seat', verifyToken, async (req, res) => {
     const { serviceId, seatNumber } = req.body;
 
     if (!serviceId || !seatNumber) {
