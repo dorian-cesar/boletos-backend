@@ -2,9 +2,10 @@ const cron = require('node-cron');
 const ServiceTemplate = require('../models/ServiceTemplate');
 const GeneratedService = require('../models/GeneratedService');
 const moment = require('moment');
+const layoutData = require('../layout.json');
 
 const generateServices = async () => {
-     console.log("📦 generateServices() iniciado", new Date().toISOString());
+    console.log("📦 generateServices() iniciado", new Date().toISOString());
     const today = moment();
     const daysToGenerate = 14;
 
@@ -23,8 +24,25 @@ const generateServices = async () => {
             });
 
             if (!alreadyExists) {
-                const layout = require('../layout.json').layouts[tpl.busLayout];
-                const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+                //  const layout = layoutData.layouts[tpl.busLayout];
+                //  const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+
+                const layout = layoutData.layouts[template.busLayout];
+
+                let seatNumbers = [];
+
+                if (layout.seatMap) {
+                    // Layout plano
+                    seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+                } else if (layout.floor1 || layout.floor2) {
+                    // Layout con pisos
+                    if (layout.floor1 && layout.floor1.seatMap) {
+                        seatNumbers = seatNumbers.concat(layout.floor1.seatMap.flat().filter(seat => seat !== ""));
+                    }
+                    if (layout.floor2 && layout.floor2.seatMap) {
+                        seatNumbers = seatNumbers.concat(layout.floor2.seatMap.flat().filter(seat => seat !== ""));
+                    }
+                }
                 const seats = seatNumbers.map(number => ({
                     number,
                     status: "available",
@@ -41,8 +59,16 @@ const generateServices = async () => {
                     departureTime: tpl.time,
                     layout: tpl.busLayout,
                     seats,
-                    price: tpl.price,
-                    company: tpl.company
+                    company: tpl.company,
+                    busTypeDescription: tpl.busTypeDescription,
+                    seatDescriptionFirst: tpl.seatDescriptionFirst,
+                    seatDescriptionSecond: tpl.seatDescriptionSecond,
+                    priceFirst: tpl.priceFirst,
+                    priceSecond: tpl.priceSecond,
+                    terminalOrigin: tpl.terminalOrigin,
+                    terminalDestination: tpl.terminalDestination,
+                    arrivalDate: tpl.arrivalDate,
+                    arrivalTime: tpl.arrivalTime
                 });
             }
         }
@@ -69,22 +95,22 @@ const cleanExpiredHolds = async () => {
         if (modified) await service.save();
     }
 };
+
 const startScheduler = () => {
-    cron.schedule('0 0,12 * * * ', async () => {
-        console.log("⏰ Ejecutando generateServices desde cron...",new Date().toISOString());
+    cron.schedule('0 0,12 * * *', async () => {
+        console.log("⏰ Ejecutando generateServices desde cron...", new Date().toISOString());
         await generateServices();
     });
 
     cron.schedule('* * * * *', async () => {
-        console.log("🧹 Ejecutando cleanExpiredHolds desde cron...",new Date().toISOString());
+        console.log("🧹 Ejecutando cleanExpiredHolds desde cron...", new Date().toISOString());
         await cleanExpiredHolds();
     });
 
-    console.log("⏳ Scheduler iniciado.",new Date().toISOString());
+    console.log("⏳ Scheduler iniciado.", new Date().toISOString());
 };
 
-//module.exports = { startScheduler };
-module.exports = { 
-  startScheduler, 
-  generateServices // Asegúrate de incluir esto
+module.exports = {
+    startScheduler,
+    generateServices
 };

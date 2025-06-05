@@ -5,54 +5,84 @@ const GeneratedService = require('../models/GeneratedService');
 const moment = require('moment');
 const layoutData = require('../layout.json');
 
-const verifyToken = require('../middlewares/auth');
-
-router.post('/create', verifyToken, async (req, res) => {
+router.post('/create', async (req, res) => {
     try {
         const {
             origin,
             destination,
-            startDate, // formato esperado: 'YYYY-MM-DD'
-            days,      // array de días: [1, 2, 3, 4, 5, 6, 7]
-            time,      // formato: 'HH:mm'
+            startDate, // formato: 'YYYY-MM-DD'
+            days, // array de días: [1, 2, 3, 4, 5, 6, 7]
+            time, // formato: 'HH:mm'
             busLayout,
-            price,
-            company
+            company,
+            busTypeDescription,
+            seatDescriptionFirst,
+            seatDescriptionSecond,
+            priceFirst,
+            priceSecond,
+            terminalOrigin,
+            terminalDestination,
+            arrivalDate,  // formato: 'YYYY-MM-DD'
+            arrivalTime   // formato: 'HH:mm'
         } = req.body;
 
-        // Validación básica
-        if (!origin || !destination || !startDate || !days || !time || !busLayout || !price) {
+        if (!origin || !destination || !startDate || !days || !time || !busLayout || !company || !busTypeDescription || !terminalOrigin || !terminalDestination || !arrivalDate || !arrivalTime) {
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
         }
-
 
         const existingTemplate = await ServiceTemplate.findOne({
             origin,
             destination,
             time,
             busLayout,
-            days: { $in: days } // coincide al menos un día
+            days: { $in: days }
         });
 
         if (existingTemplate) {
             return res.status(400).json({ error: 'Ya existe una plantilla con estos datos.' });
         }
 
-
-        // Crear plantilla
         await ServiceTemplate.create({
             origin,
             destination,
             days,
             time,
             busLayout,
-            price,
-            company
+            priceFirst,
+            priceSecond,
+
+            seatDescriptionFirst,
+            seatDescriptionSecond,
+            terminalOrigin,
+            terminalDestination,
+            arrivalDate,
+            arrivalTime,
+            company,
+            startDate  // <-- ✅ Esto es importante
         });
 
-        // Generar servicios iniciales a partir de la fecha de inicio
         const layout = layoutData.layouts[busLayout];
-        const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+        // const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+
+        //const layout = layoutData.layouts[template.busLayout];
+        // const layout = layoutData.layouts[busLayout]; // ✅
+
+
+
+        let seatNumbers = [];
+
+        if (layout.seatMap) {
+            // Layout plano
+            seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+        } else if (layout.floor1 || layout.floor2) {
+            // Layout con pisos
+            if (layout.floor1 && layout.floor1.seatMap) {
+                seatNumbers = seatNumbers.concat(layout.floor1.seatMap.flat().filter(seat => seat !== ""));
+            }
+            if (layout.floor2 && layout.floor2.seatMap) {
+                seatNumbers = seatNumbers.concat(layout.floor2.seatMap.flat().filter(seat => seat !== ""));
+            }
+        }
 
         const seats = seatNumbers.map(number => ({
             number,
@@ -68,7 +98,7 @@ router.post('/create', verifyToken, async (req, res) => {
 
         for (let i = 0; i < daysToGenerate; i++) {
             const targetDate = today.clone().add(i, 'days');
-            const dayOfWeek = targetDate.isoWeekday(); // 1 (Lunes) a 7 (Domingo)
+            const dayOfWeek = targetDate.isoWeekday(); // 1 = Lunes, 7 = Domingo
 
             if (days.includes(dayOfWeek)) {
                 const exists = await GeneratedService.findOne({
@@ -86,8 +116,16 @@ router.post('/create', verifyToken, async (req, res) => {
                         departureTime: time,
                         layout: busLayout,
                         seats,
-                        price,
-                        company
+                        company,
+                        busTypeDescription,
+                        seatDescriptionFirst,
+                        seatDescriptionSecond,
+                        priceFirst,
+                        priceSecond,
+                        terminalOrigin,
+                        terminalDestination,
+                        arrivalDate,
+                        arrivalTime
                     });
                 }
             }

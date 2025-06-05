@@ -1,25 +1,34 @@
+// models/GeneratedService.js
+
 const mongoose = require('mongoose');
 
-const SeatSchema = new mongoose.Schema({
+const generatedServiceSchema = new mongoose.Schema({
+  date: String,
+  origin: String,
+  destination: String,
+  terminalOrigin: String,
+  terminalDestination: String,
+  departureTime: String,
+  arrivalDate: String,
+  arrivalTime: String,
+  layout: String,
+  busTypeDescription: String,
+  priceFirst: Number,
+  priceSecond: Number,
+ 
+  seatDescriptionFirst: String,
+  seatDescriptionSecond: String,
+  seats: [{
     number: String,
     status: String,
     holdUntil: Date,
     reserved: Boolean,
     paid: Boolean,
-    authCode: String
+    authCode: String,
+    floor: Number // opcional si quieres distinguir primer y segundo piso
+  }],
+  price: Number,
+  company: String
 });
 
-const GeneratedServiceSchema = new mongoose.Schema({
-    date: String,
-    origin: String,
-    destination: String,
-    departureTime: String,
-    layout: String,
-    price: {
-        type: Number,
-        required: true
-    },
-    seats: [SeatSchema]
-});
-
-module.exports = mongoose.model('GeneratedService', GeneratedServiceSchema);
+module.exports = mongoose.model('GeneratedService', generatedServiceSchema);

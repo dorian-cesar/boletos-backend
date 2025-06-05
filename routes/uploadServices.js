@@ -27,8 +27,27 @@ const generateFromTemplate = async (template, startDate, daysToGenerate = 14) =>
         });
 
         if (!exists) {
-            const layout = layoutData.layouts[template.busLayout];
-            const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+             const layout = layoutData.layouts[template.busLayout];
+            // const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+
+           // const layout = layoutData.layouts[template.busLayout];
+
+            let seatNumbers = [];
+
+            if (layout.seatMap) {
+                // Layout plano
+                seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
+            } else if (layout.floor1 || layout.floor2) {
+                // Layout con pisos
+                if (layout.floor1 && layout.floor1.seatMap) {
+                    seatNumbers = seatNumbers.concat(layout.floor1.seatMap.flat().filter(seat => seat !== ""));
+                }
+                if (layout.floor2 && layout.floor2.seatMap) {
+                    seatNumbers = seatNumbers.concat(layout.floor2.seatMap.flat().filter(seat => seat !== ""));
+                }
+            }
+
+
             const seats = seatNumbers.map(number => ({
                 number,
                 status: "available",
@@ -45,14 +64,22 @@ const generateFromTemplate = async (template, startDate, daysToGenerate = 14) =>
                 departureTime: template.time,
                 layout: template.busLayout,
                 seats,
-                price: template.price,
-                company: template.company
+                company: template.company,
+                busTypeDescription: template.busTypeDescription,
+                seatDescriptionFirst: template.seatDescriptionFirst,
+                seatDescriptionSecond: template.seatDescriptionSecond,
+                priceFirst: parseInt(template.priceFirst, 10),
+                priceSecond: parseInt(template.priceSecond, 10),
+                terminalOrigin: template.terminalOrigin,
+                terminalDestination: template.terminalDestination,
+                arrivalDate: template.arrivalDate,
+                arrivalTime: template.arrivalTime
             });
         }
     }
 };
 
-router.post('/upload-services',verifyToken, upload.single('file'), async (req, res) => {
+router.post('/upload-services', verifyToken, upload.single('file'), async (req, res) => {
     const filePath = req.file.path;
     const templates = [];
 
@@ -68,8 +95,16 @@ router.post('/upload-services',verifyToken, upload.single('file'), async (req, r
                     days: parsedDays,
                     time: row.time,
                     busLayout: row.busLayout,
-                    price: parseInt(row.price, 10),
-                    company: row.company
+                    company: row.company,
+                    busTypeDescription: row.busTypeDescription,
+                    seatDescriptionFirst: row.seatDescriptionFirst,
+                    seatDescriptionSecond: row.seatDescriptionSecond,
+                    priceFirst: row.priceFirst,
+                    priceSecond: row.priceSecond,
+                    terminalOrigin: row.terminalOrigin,
+                    terminalDestination: row.terminalDestination,
+                    arrivalDate: row.arrivalDate,
+                    arrivalTime: row.arrivalTime
                 });
             } catch (err) {
                 console.error("Error procesando fila:", row, err.message);
@@ -82,9 +117,20 @@ router.post('/upload-services',verifyToken, upload.single('file'), async (req, r
                     destination: tpl.destination,
                     days: tpl.days,
                     time: tpl.time,
+                    startDate: tpl.startDate,
                     busLayout: tpl.busLayout,
-                    price: tpl.price
+                    company: tpl.company,
+                    busTypeDescription: tpl.busTypeDescription,
+                    seatDescriptionFirst: tpl.seatDescriptionFirst,
+                    seatDescriptionSecond: tpl.seatDescriptionSecond,
+                    priceFirst: parseInt(tpl.priceFirst, 10),
+                    priceSecond: parseInt(tpl.priceSecond, 10),
+                    terminalOrigin: tpl.terminalOrigin,
+                    terminalDestination: tpl.terminalDestination,
+                    arrivalDate: tpl.arrivalDate,
+                    arrivalTime: tpl.arrivalTime
                 });
+
                 await generateFromTemplate(tpl, tpl.startDate);
             }
 

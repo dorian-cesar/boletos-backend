@@ -13,14 +13,24 @@ router.get('/', async (req, res) => {
 
     res.json(services.map(s => ({
         id: s._id,
-        origin: s.origin,
-        destination: s.destination,
-        date: s.date,
-        departureTime: s.departureTime,
-        price: s.price, // ✅ Agrega esto
-        company:s.company,
-        availableSeats: s.seats.filter(seat => seat.status === 'available').length,
-        layout: s.layout
+            origin: s.origin,
+            destination: s.destination,
+            date: s.date,
+            departureTime: s.departureTime,
+            arrivalDate: s.arrivalDate,
+            arrivalTime: s.arrivalTime,
+            layout: s.layout,
+            price: s.price,
+            priceFirst: s.priceFirst,
+            priceSecond: s.priceSecond,
+            company: s.company,
+            busTypeDescription: s.busTypeDescription,
+            seatDescriptionFirst: s.seatDescriptionFirst,
+            seatDescriptionSecond: s.seatDescriptionSecond,
+            terminalOrigin: s.terminalOrigin,
+            terminalDestination: s.terminalDestination,
+            availableSeats: s.seats.filter(seat => seat.status === 'available').length
+
     })));
 });
 
