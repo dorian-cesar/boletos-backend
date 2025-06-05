@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const GeneratedService = require('../models/GeneratedService');
+const layoutData = require('../layout.json');
+
 
 router.get('/', async (req, res) => {
     const { origin, destination, date } = req.query;
@@ -29,7 +31,8 @@ router.get('/', async (req, res) => {
             seatDescriptionSecond: s.seatDescriptionSecond,
             terminalOrigin: s.terminalOrigin,
             terminalDestination: s.terminalDestination,
-            availableSeats: s.seats.filter(seat => seat.status === 'available').length
+            availableSeats: s.seats.filter(seat => seat.status === 'available').length,
+             layout: layoutData.layouts[s.layout] || null  // ← aquí incluimos el mapa del layout
 
     })));
 });
