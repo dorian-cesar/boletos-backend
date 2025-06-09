@@ -18,7 +18,13 @@ const routesRoutes = require('./routes/routes');
 
 
 
-app.use(cors());
+//app.use(cors());
+// ✅ Configurar CORS globalmente
+app.use(cors({
+    origin: '*', // ⚠️ Usa esto solo para desarrollo
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 
 app.use('/api/services', servicesRoutes);
