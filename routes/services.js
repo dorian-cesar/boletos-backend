@@ -49,7 +49,7 @@ router.get('/all', async (req, res) => {
 const verifyToken = require('../middlewares/auth');
 
 // Revertir asiento reservado
-router.patch('/revert-seat', verifyToken, async (req, res) => {
+router.patch('/revert-seat',  async (req, res) => {
     const { serviceId, seatNumber } = req.body;
 
     if (!serviceId || !seatNumber) {

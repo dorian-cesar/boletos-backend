@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const GeneratedService = require('../models/GeneratedService');
-const { holdSeat, confirmSeat } = require('../utils/seatManager');
+const { holdSeat, confirmSeat, releaseSeat } = require('../utils/seatManager');
 
 const verifyToken = require('../middlewares/auth');
 
@@ -34,4 +34,24 @@ router.post('/:serviceId/confirm', verifyToken, async (req, res) => {
     }
 });
 
+
+// 🚀 NUEVA RUTA PARA LIBERAR UN ASIENTO RESERVADO
+router.post('/:serviceId/release', verifyToken, async (req, res) => {
+    const { seatNumber } = req.body; // El cuerpo de la petición solo necesita el número del asiento
+
+    if (!seatNumber) {
+        return res.status(400).json({ error: 'El número de asiento (seatNumber) es requerido.' });
+    }
+
+    try {
+        // Llama a la nueva función del seatManager
+
+        console.log(req.params.serviceId);
+        console.log(seatNumber);
+        const result = await releaseSeat(req.params.serviceId, seatNumber);
+        res.json(result);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
 module.exports = router;
