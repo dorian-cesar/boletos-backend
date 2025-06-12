@@ -109,6 +109,8 @@ router.post('/create', async (req, res) => {
                 });
 
                 if (!exists) {
+                        const dynamicArrivalDate = moment(arrivalDate).clone().add(i, 'days').format('YYYY-MM-DD');
+
                     await GeneratedService.create({
                         origin,
                         destination,
@@ -124,7 +126,7 @@ router.post('/create', async (req, res) => {
                         priceSecond,
                         terminalOrigin,
                         terminalDestination,
-                        arrivalDate,
+                        arrivalDate :dynamicArrivalDate,
                         arrivalTime
                     });
                 }
