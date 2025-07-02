@@ -7,7 +7,7 @@ const layoutData = require('../layout.json');
 const generateServices = async () => {
     console.log("📦 generateServices() iniciado", new Date().toISOString());
     const today = moment();
-    const daysToGenerate = 14;
+    const daysToGenerate = 15;
 
     for (let i = 0; i < daysToGenerate; i++) {
         const targetDate = today.clone().add(i, 'days');
@@ -27,7 +27,7 @@ const generateServices = async () => {
                 //  const layout = layoutData.layouts[tpl.busLayout];
                 //  const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
 
-                const layout = layoutData.layouts[template.busLayout];
+                const layout = layoutData.layouts[tpl.busLayout];
 
                 let seatNumbers = [];
 
@@ -70,6 +70,8 @@ const generateServices = async () => {
                     arrivalDate: tpl.arrivalDate,
                     arrivalTime: tpl.arrivalTime
                 });
+
+                console.log(targetDate.format('YYYY-MM-DD'));
             }
         }
     }
@@ -97,7 +99,7 @@ const cleanExpiredHolds = async () => {
 };
 
 const startScheduler = () => {
-    cron.schedule('0 0,12 * * *', async () => {
+    cron.schedule('34 0,12 * * *', async () => {
         console.log("⏰ Ejecutando generateServices desde cron...", new Date().toISOString());
         await generateServices();
     });

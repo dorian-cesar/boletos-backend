@@ -1,0 +1,9 @@
+origin,destination,startDate,days,time,busLayout,company,busTypeDescription,seatDescriptionFirst,seatDescriptionSecond,priceFirst,priceSecond,terminalOrigin,terminalDestination,arrivalDate,arrivalTime
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",8:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,10:30
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",9:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,11:30
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",10:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,12:30
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",11:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,13:30
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",12:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,14:30
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",13:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,15:30
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",14:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,16:30
+Valparaiso,Santiago,2025-07-01,"[1,2,3,4,5,6,7]",15:00,double_decker_48,Bus-Express,Salón-Cama,Sillon cama,Sillon semi-cama,15000,12000,Terminal Valpo,Terminal Alameda,2025-07-01,17:30

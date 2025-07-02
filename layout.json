@@ -38,7 +38,13 @@
       ]
     }
     },
-    "double_decker_60": {
+    "double_decker_48": {
+      "pisos":2,
+      "capacidad":48,
+      "tipo_Asiento_piso_1": "Sillon cama",
+      "tipo_Asiento_piso_2": "Sillon semi-cama",
+
+
       "floor1": {
         "seatMap": [
           ["1A", "1B", "", "1C", "1D"],
