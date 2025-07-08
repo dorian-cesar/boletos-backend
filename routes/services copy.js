@@ -2,42 +2,42 @@ const express = require('express');
 const router = express.Router();
 const GeneratedService = require('../models/GeneratedService');
 //const layoutData = require('../layout.json');
-const BusLayout = require('../models/Layout');
+const BusLayout = require('../models/BusLayout');
+
 
 
 router.get('/', async (req, res) => {
     const { origin, destination, date } = req.query;
 
-    const services = await GeneratedService.find({ origin, destination, date });
+    const services = await GeneratedService.find({
+        origin,
+        destination,
+        date
+    });
 
-    const results = await Promise.all(services.map(async (s) => {
-        const layoutDoc = await BusLayout.findOne({ name: s.layout });
-        return {
-            id: s._id,
-            origin: s.origin,
-            destination: s.destination,
-            date: s.date,
-            departureTime: s.departureTime,
-            arrivalDate: s.arrivalDate,
-            arrivalTime: s.arrivalTime,
-            layout: s.layout,
-            price: s.price,
-            priceFirst: s.priceFirst,
-            priceSecond: s.priceSecond,
-            company: s.company,
-            busTypeDescription: s.busTypeDescription,
-            seatDescriptionFirst: s.seatDescriptionFirst,
-            seatDescriptionSecond: s.seatDescriptionSecond,
-            terminalOrigin: s.terminalOrigin,
-            terminalDestination: s.terminalDestination,
-            availableSeats: s.seats.filter(seat => seat.status === 'available').length,
-            seatLayout: layoutDoc || null
-        };
-    }));
+    res.json(services.map(s => ({
+        id: s._id,
+        origin: s.origin,
+        destination: s.destination,
+        date: s.date,
+        departureTime: s.departureTime,
+        arrivalDate: s.arrivalDate,
+        arrivalTime: s.arrivalTime,
+        layout: s.layout,
+        price: s.price,
+        priceFirst: s.priceFirst,
+        priceSecond: s.priceSecond,
+        company: s.company,
+        busTypeDescription: s.busTypeDescription,
+        seatDescriptionFirst: s.seatDescriptionFirst,
+        seatDescriptionSecond: s.seatDescriptionSecond,
+        terminalOrigin: s.terminalOrigin,
+        terminalDestination: s.terminalDestination,
+        availableSeats: s.seats.filter(seat => seat.status === 'available').length,
+        layout: layoutData.layouts[s.layout] || null  // ← aquí incluimos el mapa del layout
 
-    res.json(results);
+    })));
 });
-
 
 router.get('/all', async (req, res) => {
     try {
@@ -89,14 +89,15 @@ router.get('/:id/seats-detail', async (req, res) => {
             return res.status(404).json({ error: 'Servicio no encontrado' });
         }
 
-        const layoutDoc = await BusLayout.findOne({ name: service.layout }); // ✅ ahora sí válido dentro de async
-        if (!layoutDoc) return res.status(404).json({ error: 'Layout no encontrado en base de datos' });
-
-        const structuredSeats = { firstFloor: [], secondFloor: [] };
+        const layout = layoutData.layouts[service.layout];
+        const structuredSeats = {
+            firstFloor: [],
+            secondFloor: []
+        };
 
         // Piso 1
-        if (layoutDoc.floor1?.seatMap) {
-            for (let row of layoutDoc.floor1.seatMap) {
+        if (layout.floor1 && layout.floor1.seatMap) {
+            for (let row of layout.floor1.seatMap) {
                 const rowSeats = row
                     .filter(seatNumber => seatNumber !== "")
                     .map(seatNumber => {
@@ -112,8 +113,8 @@ router.get('/:id/seats-detail', async (req, res) => {
         }
 
         // Piso 2
-        if (layoutDoc.floor2?.seatMap) {
-            for (let row of layoutDoc.floor2.seatMap) {
+        if (layout.floor2 && layout.floor2.seatMap) {
+            for (let row of layout.floor2.seatMap) {
                 const rowSeats = row
                     .filter(seatNumber => seatNumber !== "")
                     .map(seatNumber => {
@@ -131,21 +132,18 @@ router.get('/:id/seats-detail', async (req, res) => {
         res.json({
             serviceId: service._id,
             layout: service.layout,
-            pisos: layoutDoc.pisos,
-            capacidad: layoutDoc.capacidad,
             busTypeDescription: service.busTypeDescription,
-            tipo_Asiento_piso_1 : layoutDoc.tipo_Asiento_piso_1,
-            tipo_Asiento_piso_2 : layoutDoc.tipo_Asiento_piso_2,
-
+          //  seatDescriptionFirst: service.seatDescriptions?.firstFloor || "",
+          //  seatDescriptionSecond: service.seatDescriptions?.secondFloor || "",
+          //  seatPrices: service.seatPrices || {},
             seats: structuredSeats
         });
 
     } catch (err) {
-        console.error("Error en GET /api/services/:id/seats-detail:", err);
+        console.error("Error en GET /api/services/:id/seats:", err);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
-
 
 
 module.exports = router;

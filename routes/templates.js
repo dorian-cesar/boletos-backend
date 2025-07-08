@@ -3,7 +3,9 @@ const router = express.Router();
 const ServiceTemplate = require('../models/ServiceTemplate');
 const GeneratedService = require('../models/GeneratedService');
 const moment = require('moment');
-const layoutData = require('../layout.json');
+//const layoutData = require('../layout.json');
+
+const layoutData = require('../models/Layout');
 
 router.post('/create', async (req, res) => {
     try {
@@ -62,10 +64,7 @@ router.post('/create', async (req, res) => {
         });
 
         const layout = layoutData.layouts[busLayout];
-        // const seatNumbers = layout.seatMap.flat().filter(seat => seat !== "");
-
-        //const layout = layoutData.layouts[template.busLayout];
-        // const layout = layoutData.layouts[busLayout]; // ✅
+       
 
 
 

@@ -2,7 +2,9 @@ const cron = require('node-cron');
 const ServiceTemplate = require('../models/ServiceTemplate');
 const GeneratedService = require('../models/GeneratedService');
 const moment = require('moment');
-const layoutData = require('../layout.json');
+//const layoutData = require('../layout.json');
+
+const layoutData = require('../models/Layout');
 
 const generateServices = async () => {
     console.log("📦 generateServices() iniciado", new Date().toISOString());

@@ -5,7 +5,9 @@ const csv = require('csv-parser');
 const moment = require('moment');
 const ServiceTemplate = require('../models/ServiceTemplate');
 const GeneratedService = require('../models/GeneratedService');
-const layoutData = require('../layout.json');
+//const layoutData = require('../layout.json');
+
+const layoutData = require('../models/Layout');
 
 const verifyToken = require('../middlewares/auth');
 
