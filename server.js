@@ -15,6 +15,7 @@ const uploadServicesRoutes = require('./routes/uploadServices');
 const { startScheduler } = require('./utils/scheduler');
 const routesRoutes = require('./routes/routes');
 const usersRoutes = require('./routes/users');
+const busesRoutes = require('./routes/buses');
 
 
 
@@ -35,6 +36,9 @@ app.use('/api/templates', templatesRoutes);
 app.use('/api', uploadServicesRoutes);
 app.use('/api/routes', routesRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/buses', busesRoutes);
+app.use('/api/cajas', require('./routes/caja'));
+app.use('/api/movimientos', require('./routes/movimientos'));
 
 
 const MONGO_URI = process.env.MONGO_URI;
