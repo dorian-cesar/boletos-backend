@@ -28,7 +28,11 @@ const generatedServiceSchema = new mongoose.Schema({
     floor: Number // opcional si quieres distinguir primer y segundo piso
   }],
   price: Number,
-  company: String
+  company: String,
+    // 👇 Nuevos campos
+  bus: { type: mongoose.Schema.Types.ObjectId, ref: 'Bus' },
+  crew: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
+
 
 module.exports = mongoose.model('GeneratedService', generatedServiceSchema);

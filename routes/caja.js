@@ -32,5 +32,13 @@ router.put('/:id/cerrar', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+router.get('/todas', async (req, res) => {
+  try {
+    const cajas = await Caja.find().sort({ createdAt: -1 });
+    res.json(cajas);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

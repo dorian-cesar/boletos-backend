@@ -16,6 +16,7 @@ const { startScheduler } = require('./utils/scheduler');
 const routesRoutes = require('./routes/routes');
 const usersRoutes = require('./routes/users');
 const busesRoutes = require('./routes/buses');
+const asignacionRoutes = require('./routes/servicioAsignacion');
 
 
 
@@ -39,6 +40,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/buses', busesRoutes);
 app.use('/api/cajas', require('./routes/caja'));
 app.use('/api/movimientos', require('./routes/movimientos'));
+app.use('/api/servicios', asignacionRoutes);
 
 
 const MONGO_URI = process.env.MONGO_URI;

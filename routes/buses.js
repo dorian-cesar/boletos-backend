@@ -1,17 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const Bus = require('../models/Bus');
+const Layout = require('../models/Layout');
 
 // Crear un bus
 router.post('/', async (req, res) => {
   try {
-    const bus = new Bus(req.body);
+    const { layout, ...busData } = req.body;
+
+    // Validar formato del ObjectId si viene layout
+    if (layout) {
+      if (!mongoose.Types.ObjectId.isValid(layout)) {
+        return res.status(400).json({ error: 'El ID de layout no es válido.' });
+      }
+
+      const layoutExiste = await Layout.findById(layout);
+      if (!layoutExiste) {
+        return res.status(400).json({ error: 'El layout especificado no existe.' });
+      }
+    }
+
+    const bus = new Bus({ ...busData, layout });
     await bus.save();
     res.status(201).json(bus);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
+
 
 // Listar todos los buses
 router.get('/', async (req, res) => {
