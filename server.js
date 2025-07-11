@@ -25,7 +25,7 @@ const asignacionRoutes = require('./routes/servicioAsignacion');
 // ✅ Configurar CORS globalmente
 app.use(cors({
     origin: '*', // ⚠️ Usa esto solo para desarrollo
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
