@@ -18,7 +18,8 @@ const generateServices = async () => {
         const lastGenerated = await GeneratedService.findOne({
             origin: tpl.origin,
             destination: tpl.destination,
-            departureTime: tpl.time
+            departureTime: tpl.time,
+            cancelado: { $ne: true } // ⬅️ aquí se ignoran los cancelados
         }).sort({ date: -1 }).limit(1);
 
         const startDate = lastGenerated

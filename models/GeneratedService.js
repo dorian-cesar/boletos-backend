@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const generatedServiceSchema = new mongoose.Schema({
   date: String,
+  cancelado: { type: Boolean, default: false },
   origin: String,
   destination: String,
   terminalOrigin: String,

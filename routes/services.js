@@ -3,12 +3,18 @@ const router = express.Router();
 const GeneratedService = require('../models/GeneratedService');
 //const layoutData = require('../layout.json');
 const BusLayout = require('../models/Layout');
+const moment = require('moment');
 
 
 router.get('/', async (req, res) => {
     const { origin, destination, date } = req.query;
 
-    const services = await GeneratedService.find({ origin, destination, date });
+    const services = await GeneratedService.find({
+        origin,
+        destination,
+        date,
+        cancelado: { $ne: true } // ⬅️ este filtro es clave
+    });
 
     const results = await Promise.all(services.map(async (s) => {
         const layoutDoc = await BusLayout.findOne({ name: s.layout });
@@ -51,7 +57,7 @@ router.get('/all', async (req, res) => {
 const verifyToken = require('../middlewares/auth');
 
 // Revertir asiento reservado
-router.patch('/revert-seat',  async (req, res) => {
+router.patch('/revert-seat', async (req, res) => {
     const { serviceId, seatNumber } = req.body;
 
     if (!serviceId || !seatNumber) {
@@ -134,8 +140,8 @@ router.get('/:id/seats-detail', async (req, res) => {
             pisos: layoutDoc.pisos,
             capacidad: layoutDoc.capacidad,
             busTypeDescription: service.busTypeDescription,
-            tipo_Asiento_piso_1 : layoutDoc.tipo_Asiento_piso_1,
-            tipo_Asiento_piso_2 : layoutDoc.tipo_Asiento_piso_2,
+            tipo_Asiento_piso_1: layoutDoc.tipo_Asiento_piso_1,
+            tipo_Asiento_piso_2: layoutDoc.tipo_Asiento_piso_2,
 
             seats: structuredSeats
         });
@@ -146,6 +152,42 @@ router.get('/:id/seats-detail', async (req, res) => {
     }
 });
 
+// DELETE /api/servicios/terminar?origen=Santiago&destino=Valparaiso&hora=14:00&desde=2025-07-20
+router.patch('/cancelar', async (req, res) => {
+    const { origen, destino, hora, desde } = req.body;
+
+   
+
+    // Validación: campos requeridos
+    if (!origen || !destino || !hora || !desde) {
+        return res.status(400).json({ error: 'Faltan parámetros. Se requieren: origen, destino, hora y desde.' });
+    }
+
+    // Validar formato de fecha
+    if (!moment(desde, 'YYYY-MM-DD', true).isValid()) {
+        return res.status(400).json({ error: 'Fecha "desde" inválida. Usa formato YYYY-MM-DD.' });
+    }
+
+    try {
+        const result = await GeneratedService.updateMany(
+            {
+                origin: origen,
+                destination: destino,
+                departureTime: hora,
+                date: { $gte: desde }
+            },
+            { $set: { cancelado: true } }
+        );
+
+        res.json({
+            message: `✅ ${result.modifiedCount} servicios cancelados desde ${desde}`,
+            filtros: { origen, destino, hora, desde }
+        });
+    } catch (error) {
+        console.error("❌ Error al cancelar servicios:", error);
+        res.status(500).json({ error: 'Error interno al cancelar servicios' });
+    }
+});
 
 
 module.exports = router;

@@ -21,6 +21,7 @@ const asignacionRoutes = require('./routes/servicioAsignacion');
 
 
 
+
 //app.use(cors());
 // ✅ Configurar CORS globalmente
 app.use(cors({
