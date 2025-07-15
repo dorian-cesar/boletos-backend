@@ -11,7 +11,8 @@ const generateServices = async () => {
     const daysToGenerate = 7;
 
     // Buscar todas las plantillas
-    const allTemplates = await ServiceTemplate.find({});
+    //const allTemplates = await ServiceTemplate.find({});
+    const allTemplates = await ServiceTemplate.find({ cancelado: { $ne: true } });
 
     for (const tpl of allTemplates) {
         // Buscar último servicio generado para esta plantilla específica

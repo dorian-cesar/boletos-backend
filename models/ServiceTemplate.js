@@ -6,6 +6,7 @@ const serviceTemplateSchema = new mongoose.Schema({
   origin: String,
   destination: String,
   terminalOrigin: String,
+  cancelado: { type: Boolean, default: false },
   terminalDestination: String,
   days: [Number],
   time: String,

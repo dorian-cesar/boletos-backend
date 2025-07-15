@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const GeneratedService = require('../models/GeneratedService');
-//const layoutData = require('../layout.json');
+
 const BusLayout = require('../models/Layout');
 const moment = require('moment');
+
+
+
+
+
+const ServiceTemplate = require('../models/ServiceTemplate');
 
 
 router.get('/', async (req, res) => {
@@ -153,41 +159,56 @@ router.get('/:id/seats-detail', async (req, res) => {
 });
 
 // DELETE /api/servicios/terminar?origen=Santiago&destino=Valparaiso&hora=14:00&desde=2025-07-20
+
+
+
 router.patch('/cancelar', async (req, res) => {
-    const { origen, destino, hora, desde } = req.body;
+  const { origen, destino, hora, desde } = req.body;
 
-   
+  if (!origen || !destino || !hora || !desde) {
+    return res.status(400).json({
+      error: 'Faltan parámetros. Se requieren: origen, destino, hora y desde.'
+    });
+  }
 
-    // Validación: campos requeridos
-    if (!origen || !destino || !hora || !desde) {
-        return res.status(400).json({ error: 'Faltan parámetros. Se requieren: origen, destino, hora y desde.' });
-    }
+  if (!moment(desde, 'YYYY-MM-DD', true).isValid()) {
+    return res.status(400).json({ error: 'Fecha "desde" inválida. Usa formato YYYY-MM-DD.' });
+  }
 
-    // Validar formato de fecha
-    if (!moment(desde, 'YYYY-MM-DD', true).isValid()) {
-        return res.status(400).json({ error: 'Fecha "desde" inválida. Usa formato YYYY-MM-DD.' });
-    }
+  try {
+    // 1. Cancelar servicios desde la fecha indicada
+    const serviciosCancelados = await GeneratedService.updateMany(
+      {
+        origin: origen,
+        destination: destino,
+        departureTime: hora,
+        date: { $gte: desde }
+      },
+      { $set: { cancelado: true } }
+    );
 
-    try {
-        const result = await GeneratedService.updateMany(
-            {
-                origin: origen,
-                destination: destino,
-                departureTime: hora,
-                date: { $gte: desde }
-            },
-            { $set: { cancelado: true } }
-        );
+    // 2. Cancelar la plantilla correspondiente
+    const plantillaCancelada = await ServiceTemplate.updateOne(
+      {
+        origin: origen,
+        destination: destino,
+        time: hora
+      },
+      { $set: { cancelado: true } }
+    );
 
-        res.json({
-            message: `✅ ${result.modifiedCount} servicios cancelados desde ${desde}`,
-            filtros: { origen, destino, hora, desde }
-        });
-    } catch (error) {
-        console.error("❌ Error al cancelar servicios:", error);
-        res.status(500).json({ error: 'Error interno al cancelar servicios' });
-    }
+    res.json({
+      message: `✅ ${serviciosCancelados.modifiedCount} servicios cancelados desde ${desde}`,
+      plantillaCancelada: plantillaCancelada.modifiedCount > 0,
+      filtros: { origen, destino, hora, desde }
+    });
+  } catch (error) {
+    console.error('❌ Error al cancelar servicios y plantilla:', error);
+    res.status(500).json({ error: 'Error interno al cancelar servicios y plantilla' });
+  }
 });
+
+module.exports = router;
 
 
 module.exports = router;
