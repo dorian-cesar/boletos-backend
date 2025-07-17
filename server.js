@@ -42,6 +42,7 @@ app.use('/api/buses', busesRoutes);
 app.use('/api/cajas', require('./routes/caja'));
 app.use('/api/movimientos', require('./routes/movimientos'));
 app.use('/api/servicios', asignacionRoutes);
+app.use('/api/email', require('./routes/email'));
 
 
 const MONGO_URI = process.env.MONGO_URI;
