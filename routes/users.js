@@ -37,4 +37,30 @@ router.get('/', verifyToken, async (req, res) => {
   res.json(users);
 });
 
+// Registro de invitados
+router.post('/register-guest', async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(200).json({
+        message: 'El usuario ya está enrolado',
+        user_id: existingUser._id
+      });
+    }
+
+    const user = new User({ name, email, role: 'invitado' });
+    await user.save();
+
+    res.status(201).json({
+      message: 'Invitado registrado correctamente',
+      user_id: user._id
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: 'Error al registrar invitado', details: err.message });
+  }
+});
+
 module.exports = router;
