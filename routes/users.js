@@ -63,4 +63,43 @@ router.post('/register-guest', async (req, res) => {
   }
 });
 
+// Eliminar un usuario por ID (protegido, opcionalmente solo admin)
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await User.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json({ message: 'Usuario eliminado correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar usuario', details: err.message });
+  }
+});
+
+// Editar un usuario por ID (protegido, opcionalmente solo admin)
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, password, role } = req.body;
+
+    const updateData = { name, email, role };
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true }).select('-password');
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json({ message: 'Usuario actualizado correctamente', user: updatedUser });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar usuario', details: err.message });
+  }
+});
+
 module.exports = router;

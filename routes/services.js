@@ -115,7 +115,8 @@ router.get('/:id/seats-detail', async (req, res) => {
                         const seatData = service.seats.find(s => s.number === seatNumber);
                         return {
                             ...seatData.toObject(),
-                            price: service.seatPrices?.firstFloor || service.price || 0,
+                           // price: service.seatPrices?.firstFloor || service.price || 0,
+                            price: service.priceFirst || service.price || 0, // ✅ corregido
                             floor: 'floor1'
                         };
                     });
@@ -132,7 +133,8 @@ router.get('/:id/seats-detail', async (req, res) => {
                         const seatData = service.seats.find(s => s.number === seatNumber);
                         return {
                             ...seatData.toObject(),
-                            price: service.seatPrices?.secondFloor || service.price || 0,
+                          //  price: service.seatPrices?.secondFloor || service.price || 0,
+                            price: service.priceSecond || service.price || 0, // ✅ corregido
                             floor: 'floor2'
                         };
                     });
