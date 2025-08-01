@@ -128,7 +128,7 @@ const cleanExpiredHolds = async () => {
 };
 
 const startScheduler = () => {
-    cron.schedule('0 0,16 * * *', async () => {
+    cron.schedule('0 0 * * *', async () => {
         console.log("⏰ Ejecutando generateServices desde cron...", new Date().toISOString());
         await generateServices();
     });

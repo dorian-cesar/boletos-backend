@@ -20,6 +20,7 @@ const asignacionRoutes = require('./routes/servicioAsignacion');
 const cityRoutes = require('./routes/cities');
 const companyRoutes = require('./routes/companies');
 const terminalRoutes = require('./routes/terminals');
+const tipoServicioRoutes = require('./routes/busServiceTypes');
 
 
 
@@ -49,6 +50,7 @@ app.use('/api/email', require('./routes/email'));
 app.use('/api/cities', cityRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/terminals', terminalRoutes);
+app.use('/api/tipoServicio', tipoServicioRoutes);
 
 
 
