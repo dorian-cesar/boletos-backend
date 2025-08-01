@@ -18,6 +18,7 @@ const usersRoutes = require('./routes/users');
 const busesRoutes = require('./routes/buses');
 const asignacionRoutes = require('./routes/servicioAsignacion');
 const cityRoutes = require('./routes/cities');
+const companyRoutes = require('./routes/companies');
 
 
 
@@ -45,6 +46,7 @@ app.use('/api/movimientos', require('./routes/movimientos'));
 app.use('/api/servicios', asignacionRoutes);
 app.use('/api/email', require('./routes/email'));
 app.use('/api/cities', cityRoutes);
+app.use('/api/companies', companyRoutes);
 
 
 const MONGO_URI = process.env.MONGO_URI;
