@@ -102,4 +102,44 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
+// Base temporal en memoria (idealmente usar una DB o Redis)
+const passwordResetTokens = {};
+
+// Solicitar restablecimiento de contraseña
+
+const crypto = require('crypto');
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) return res.status(404).json({ error: 'Correo no encontrado' });
+
+  const token = crypto.randomBytes(32).toString('hex');
+  passwordResetTokens[token] = { userId: user._id, expires: Date.now() + 15 * 60 * 1000 }; // 15 min
+
+  // Aquí deberías enviar el token por correo en producción
+  // Por ahora lo devolvemos en la respuesta:
+  res.json({ message: 'Token generado', token });
+});
+
+// Restablecer contraseña con token
+router.post('/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+  const data = passwordResetTokens[token];
+
+  if (!data || data.expires < Date.now()) {
+    return res.status(400).json({ error: 'Token inválido o expirado' });
+  }
+
+  const user = await User.findById(data.userId);
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+
+  delete passwordResetTokens[token];
+
+  res.json({ message: 'Contraseña restablecida correctamente' });
+});
+
 module.exports = router;

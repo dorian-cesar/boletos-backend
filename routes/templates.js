@@ -63,8 +63,14 @@ router.post('/create', async (req, res) => {
             startDate  // <-- ✅ Esto es importante
         });
 
-        const layout = layoutData.layouts[busLayout];
-       
+        //  const layout = layoutData.layouts[busLayout];
+
+        const layout = await layoutData.findOne({ name: busLayout });
+
+        if (!layout) {
+            return res.status(404).json({ error: `No se encontró el layout con nombre '${busLayout}'` });
+        }
+
 
 
 
@@ -108,7 +114,7 @@ router.post('/create', async (req, res) => {
                 });
 
                 if (!exists) {
-                        const dynamicArrivalDate = moment(arrivalDate).clone().add(i, 'days').format('YYYY-MM-DD');
+                    const dynamicArrivalDate = moment(arrivalDate).clone().add(i, 'days').format('YYYY-MM-DD');
 
                     await GeneratedService.create({
                         origin,
@@ -125,7 +131,7 @@ router.post('/create', async (req, res) => {
                         priceSecond,
                         terminalOrigin,
                         terminalDestination,
-                        arrivalDate :dynamicArrivalDate,
+                        arrivalDate: dynamicArrivalDate,
                         arrivalTime
                     });
                 }
