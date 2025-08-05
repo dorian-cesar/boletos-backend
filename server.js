@@ -21,6 +21,7 @@ const cityRoutes = require('./routes/cities');
 const companyRoutes = require('./routes/companies');
 const terminalRoutes = require('./routes/terminals');
 const tipoServicioRoutes = require('./routes/busServiceTypes');
+const routeMasterRoutes = require('./routes/routeMasterRoutes');
 
 
 
@@ -51,6 +52,8 @@ app.use('/api/cities', cityRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/terminals', terminalRoutes);
 app.use('/api/tipoServicio', tipoServicioRoutes);
+app.use('/api/routes', routeMasterRoutes);
+
 
 
 
