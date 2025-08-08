@@ -112,26 +112,36 @@ const crypto = require('crypto');
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
-
     if (!user) return res.status(404).json({ error: 'Correo no encontrado' });
-
     const token = crypto.randomBytes(32).toString('hex');
     passwordResetTokens[token] = { userId: user._id, expires: Date.now() + 15 * 60 * 1000 };
-
-    const resetLink = `https://boletos-com.netlify.app//reset-password?token=${token}`;
-
-    // Llamada a tu endpoint /api/email
-    await axios.post('https://boletos.dev-wit.com/api/email', {
-        to: email,
-        subject: 'Recupera tu contraseña',
-        message: `
-            <p>Hola ${user.name || ''},</p>
-            <p>Para restablecer tu contraseña haz clic en el siguiente enlace:</p>
-            <a href="${resetLink}">${resetLink}</a>
-            <p>El enlace expira en 15 minutos.</p>
-        `
-    });
-    res.json({ success: true, message: 'Correo de recuperación enviado' });
+    const resetLink = `https://boletos-com.netlify.app/reset-password?token=${token}`;
+    try {
+        // Llamada a tu endpoint /api/email usando fetch
+        const response = await fetch('https://boletos.dev-wit.com/api/email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                to: email,
+                subject: 'Recupera tu contraseña',
+                message: `
+                    <p>Hola ${user.name || ''},</p>
+                    <p>Para restablecer tu contraseña haz clic en el siguiente enlace:</p>
+                    <a href="${resetLink}">${resetLink}</a>
+                    <p>El enlace expira en 15 minutos.</p>
+                `
+            })
+        });
+        if (!response.ok) {
+            throw new Error(`Error enviando correo: ${response.statusText}`);
+        }
+        res.json({ success: true, message: 'Correo de recuperación enviado' });
+    } catch (err) {
+        console.error('Error en forgot-password:', err);
+        res.status(500).json({ error: 'Error enviando correo' });
+    }
 });
 
 // Restablecer contraseña con token

@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
     }
 
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"Boletos" <${process.env.EMAIL_USER}>`,
         to,
         subject,
         html: message
