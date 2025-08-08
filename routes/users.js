@@ -108,18 +108,30 @@ const passwordResetTokens = {};
 // Solicitar restablecimiento de contraseña
 
 const crypto = require('crypto');
+
 router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+    const { email } = req.body;
+    const user = await User.findOne({ email });
 
-  if (!user) return res.status(404).json({ error: 'Correo no encontrado' });
+    if (!user) return res.status(404).json({ error: 'Correo no encontrado' });
 
-  const token = crypto.randomBytes(32).toString('hex');
-  passwordResetTokens[token] = { userId: user._id, expires: Date.now() + 15 * 60 * 1000 }; // 15 min
+    const token = crypto.randomBytes(32).toString('hex');
+    passwordResetTokens[token] = { userId: user._id, expires: Date.now() + 15 * 60 * 1000 };
 
-  // Aquí deberías enviar el token por correo en producción
-  // Por ahora lo devolvemos en la respuesta:
-  res.json({ message: 'Token generado', token });
+    const resetLink = `https://boletos-com.netlify.app//reset-password?token=${token}`;
+
+    // Llamada a tu endpoint /api/email
+    await axios.post('https://boletos.dev-wit.com/api/email', {
+        to: email,
+        subject: 'Recupera tu contraseña',
+        message: `
+            <p>Hola ${user.name || ''},</p>
+            <p>Para restablecer tu contraseña haz clic en el siguiente enlace:</p>
+            <a href="${resetLink}">${resetLink}</a>
+            <p>El enlace expira en 15 minutos.</p>
+        `
+    });
+    res.json({ success: true, message: 'Correo de recuperación enviado' });
 });
 
 // Restablecer contraseña con token
