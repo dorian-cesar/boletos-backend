@@ -27,7 +27,7 @@ router.post('/login', async (req, res) => {
   if (!isMatch) return res.status(401).json({ error: 'Contraseña incorrecta' });
 
   const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '12h' });
-  res.json({ token, user: { name: user.name, email: user.email, role: user.role } });
+  res.json({ token, user: { name: user.name, email: user.email, role: user.role, rut: user.rut } });
 });
 
 // Obtener todos los usuarios (protegido, solo admin)
