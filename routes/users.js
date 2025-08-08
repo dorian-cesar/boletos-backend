@@ -8,8 +8,8 @@ const verifyToken = require('../middlewares/auth');
 // Registro
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    const user = new User({ name, email, password, role });
+    const { name, email, password, role, rut } = req.body;
+    const user = new User({ name, email, password, role, rut });
     await user.save();
     res.json({ message: 'Usuario registrado correctamente' });
   } catch (err) {
