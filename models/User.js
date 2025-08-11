@@ -24,6 +24,8 @@ const userSchema = new mongoose.Schema(
 // Encriptar contraseña antes de guardar
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+  // Evitar re-hashear si la contraseña ya está hasheada (bcrypt hash tiene formato estándar)
+  if (this.password.startsWith("$2b$")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
