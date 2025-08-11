@@ -32,7 +32,7 @@ exports.createRouteBlock = async (req, res) => {
 // Obtener todos los bloques
 exports.getAllRouteBlocks = async (req, res) => {
   try {
-    const blocks = await RouteBlock.find().populate('routeMaster layout');
+    const blocks = await RouteBlock.find();
     res.json(blocks);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener los bloques.' });
@@ -42,7 +42,7 @@ exports.getAllRouteBlocks = async (req, res) => {
 // Obtener un bloque por ID
 exports.getRouteBlockById = async (req, res) => {
   try {
-    const block = await RouteBlock.findById(req.params.id).populate('routeMaster layout');
+    const block = await RouteBlock.findById(req.params.id);
     if (!block) return res.status(404).json({ error: 'Bloque no encontrado' });
     res.json(block);
   } catch (error) {
