@@ -38,3 +38,16 @@ exports.getRouteMasterById = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener la ruta.' });
   }
 };
+// 🗑 Eliminar ruta maestra por ID
+exports.deleteRouteMaster = async (req, res) => {
+  try {
+    const route = await RouteMaster.findByIdAndDelete(req.params.id);
+    if (!route) {
+      return res.status(404).json({ error: 'Ruta no encontrada' });
+    }
+    res.json({ message: 'Ruta maestra eliminada correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar la ruta.' });
+  }
+};
+
