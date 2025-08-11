@@ -17,4 +17,6 @@ router.put('/:id', controller.updateRouteBlock);
 // Eliminar
 router.delete('/:id', controller.deleteRouteBlock);
 
+router.get('/byRouteMaster/:routeMasterId', controller.getRouteBlocksByRouteMaster);
+
 module.exports = router;
