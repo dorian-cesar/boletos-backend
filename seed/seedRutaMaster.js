@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const RouteMaster = require('../models/RouteMaster');
 
 // Conexión a tu base de datos MongoDB
-mongoose.connect('mongodb://54.81.20.90:27017/ruta_maestra', {
+mongoose.connect('mongodb://54.81.20.90:27017/bus_transport', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log('✅ Conectado a MongoDB'))
