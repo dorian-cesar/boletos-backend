@@ -47,7 +47,8 @@ router.post("/login", async (req, res) => {
 // Obtener todos los usuarios (protegido, solo admin)
 router.get("/", verifyToken, async (req, res) => {
   // if (req.user.role !== 'admin') return res.status(403).json({ error: 'Acceso denegado' });
-  const users = await User.find().select("-password");
+  const users = await User.find();
+  // const users = await User.find().select("-password");
   res.json(users);
 });
 
@@ -126,68 +127,6 @@ router.put("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// Base temporal en memoria (idealmente usar una DB o Redis)
-// const passwordResetTokens = {};
-
-// Solicitar restablecimiento de contraseña
-
-// const crypto = require("crypto");
-
-// router.post('/forgot-password', async (req, res) => {
-//     const { email } = req.body;
-//     const user = await User.findOne({ email });
-//     if (!user) return res.status(404).json({ error: 'Correo no encontrado' });
-//     const token = crypto.randomBytes(32).toString('hex');
-//     passwordResetTokens[token] = { userId: user._id, expires: Date.now() + 15 * 60 * 1000 };
-//     const resetLink = `https://boletos-com.netlify.app/reset-password?token=${token}`;
-//     try {
-//         // Llamada a tu endpoint /api/email usando fetch
-//         const response = await fetch('https://boletos.dev-wit.com/api/email', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({
-//                 to: email,
-//                 subject: 'Recupera tu contraseña',
-//                 message: `
-//                     <p>Hola ${user.name || ''},</p>
-//                     <p>Para restablecer tu contraseña haz clic en el siguiente enlace:</p>
-//                     <a href="${resetLink}">${resetLink}</a>
-//                     <p>El enlace expira en 15 minutos.</p>
-//                 `
-//             })
-//         });
-//         if (!response.ok) {
-//             throw new Error(`Error enviando correo: ${response.statusText}`);
-//         }
-//         res.json({ success: true, message: 'Correo de recuperación enviado' });
-//     } catch (err) {
-//         console.error('Error en forgot-password:', err);
-//         res.status(500).json({ error: 'Error enviando correo' });
-//     }
-// });
-
-// // Restablecer contraseña con token
-// router.post('/reset-password', async (req, res) => {
-//   const { token, newPassword } = req.body;
-//   const data = passwordResetTokens[token];
-
-//   if (!data || data.expires < Date.now()) {
-//     return res.status(400).json({ error: 'Token inválido o expirado' });
-//   }
-
-//   const user = await User.findById(data.userId);
-//   if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-
-//   user.password = await bcrypt.hash(newPassword, 10);
-//   await user.save();
-
-//   delete passwordResetTokens[token];
-
-//   res.json({ message: 'Contraseña restablecida correctamente' });
-// });
-
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
 
@@ -200,10 +139,10 @@ router.post("/forgot-password", async (req, res) => {
     });
 
     const resetLink = `https://boletos-com.netlify.app/reset-password?token=${token}`;
-    // const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    // const resetLink = `http://localhost:3001/reset-password?token=${token}`;
 
     const response = await fetch("https://boletos.dev-wit.com/api/email", {
-    // const response = await fetch("http://localhost:3000/api/email", {
+      // const response = await fetch("http://localhost:3000/api/email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -238,7 +177,7 @@ router.post("/reset-password", async (req, res) => {
     const user = await User.findById(decoded.userId);
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = newPassword;
     await user.save();
 
     res.json({ message: "Contraseña restablecida correctamente" });
