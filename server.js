@@ -22,6 +22,17 @@ const companyRoutes = require('./routes/companies');
 const terminalRoutes = require('./routes/terminals');
 const tipoServicioRoutes = require('./routes/busServiceTypes');
 
+const routeBlocksGeneratedRoutes = require('./routes/routeBlocksGenerated');
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -52,6 +63,14 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/terminals', terminalRoutes);
 app.use('/api/tipoServicio', tipoServicioRoutes);
 
+app.use('/api/route-masters', require('./routes/routeMasters'));
+app.use('/api/route-blocks', require('./routes/routeBlocks'));
+app.use('/api/route-blocks-generated', require('./routes/routeBlocksGenerated'));
+
+
+app.use('/api/route-block-generated', routeBlocksGeneratedRoutes);
+app.use('/api/route-blocks-generated', routeBlocksGeneratedRoutes);
+app.use('/api/route-blocks-generated', routeBlocksGeneratedRoutes);
 
 
 const MONGO_URI = process.env.MONGO_URI;
