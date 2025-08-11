@@ -11,4 +11,7 @@ router.get('/', controller.getAllRouteMasters);
 // Obtener una por ID
 router.get('/:id', controller.getRouteMasterById);
 
+router.delete('/:id', controller.deleteRouteMaster);
+
+
 module.exports = router;
