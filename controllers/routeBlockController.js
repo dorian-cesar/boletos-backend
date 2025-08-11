@@ -85,3 +85,33 @@ exports.deleteRouteBlock = async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar el bloque.', details: error.message });
   }
 };
+
+// Obtener todos los bloques por ID de Ruta Maestra
+exports.getRouteBlocksByRouteMaster = async (req, res) => {
+  try {
+    const { routeMasterId } = req.params;
+
+    if (!routeMasterId) {
+      return res.status(400).json({ error: 'Debe proporcionar un ID de ruta maestra.' });
+    }
+
+    // Verificar si existe la ruta maestra
+    const routeMaster = await RouteMaster.findById(routeMasterId);
+    if (!routeMaster) {
+      return res.status(404).json({ error: 'Ruta maestra no encontrada.' });
+    }
+
+    // Buscar bloques asociados a esa ruta maestra
+    const blocks = await RouteBlock.find({ routeMaster: routeMasterId })
+      .populate('routeMaster', 'name')
+      .populate('layout', 'name');
+
+    res.json({
+      routeMaster: routeMaster.name,
+      totalBlocks: blocks.length,
+      blocks
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener bloques por ruta maestra.', details: error.message });
+  }
+};
