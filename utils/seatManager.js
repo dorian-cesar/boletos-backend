@@ -1,5 +1,5 @@
-const GeneratedService = require("../models/GeneratedService");
 const mongoose = require('mongoose');
+const GeneratedService = require("../models/GeneratedService");
 
 async function holdSeat(serviceId, seatNumber, userId) {
   const service = await GeneratedService.findById(serviceId);
@@ -32,6 +32,9 @@ async function confirmSeat(serviceId, seatNumber, authCode, userId) {
   seat.holdUntil = null;
   seat.authCode = authCode;
   seat.userId = new mongoose.Types.ObjectId(userId);
+
+  const index = service.seats.findIndex(s => s.number === seatNumber);
+  service.seats[index] = seat;
   await service.save();
 
   return { success: true };
