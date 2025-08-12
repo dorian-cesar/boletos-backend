@@ -190,4 +190,48 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
+router.post("/change-password", async (req, res) => {
+  const { email, password, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(401).json({ error: "Contraseña incorrecta" });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    const emailResponse = await fetch("https://boletos.dev-wit.com/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: user.email,
+        subject: "Confirmación de cambio de contraseña",
+        message: `
+          <p>Hola ${user.name || "usuario"},</p>
+          <p>Tu contraseña ha sido actualizada correctamente.</p>
+          <p>Si no realizaste este cambio, por favor contacta al soporte inmediatamente.</p>
+        `,
+      }),
+    });
+
+    if (!emailResponse.ok) {
+      console.error("Error enviando correo de confirmación");
+    }
+
+    res.json({ message: "Contraseña actualizada correctamente" });
+  } catch (err) {
+    console.error("Error en change-password:", err);
+    res
+      .status(400)
+      .json({ error: "Error al actualizar contraseña", details: err.message });
+  }
+});
+
 module.exports = router;
