@@ -177,7 +177,10 @@ router.post("/reset-password", async (req, res) => {
     const user = await User.findById(decoded.userId);
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-    user.password = newPassword;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
     await user.save();
 
     res.json({ message: "Contraseña restablecida correctamente" });
