@@ -32,7 +32,6 @@ async function confirmSeat(serviceId, seatNumber, authCode, userId) {
   seat.holdUntil = null;
   seat.authCode = authCode;
   seat.userId = new mongoose.Types.ObjectId(userId);
-  service.markModified("seats");
   await service.save();
 
   return { success: true };
