@@ -1,4 +1,5 @@
 const GeneratedService = require("../models/GeneratedService");
+const mongoose = require('mongoose');
 
 async function holdSeat(serviceId, seatNumber, userId) {
   const service = await GeneratedService.findById(serviceId);
@@ -26,15 +27,11 @@ async function confirmSeat(serviceId, seatNumber, authCode, userId) {
   if (!seat || seat.status !== "hold")
     throw new Error("Asiento no reservado o no válido");
 
-  if (mongoose.Types.ObjectId.isValid(userId)) {
-    seat.userId = new mongoose.Types.ObjectId(userId);
-  }
-
   seat.status = "paid";
   seat.paid = true;
   seat.holdUntil = null;
   seat.authCode = authCode;
-  seat.userId = mongoose.Types.ObjectId(userId);
+  seat.userId = new mongoose.Types.ObjectId(userId);
   service.markModified("seats");
   await service.save();
 
