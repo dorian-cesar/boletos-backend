@@ -6,15 +6,16 @@ const seatSchema = new mongoose.Schema({
   passengerName: String,          // Opcional
   passengerDocument: String,      // Opcional
   from: String,                   // Ciudad de origen del tramo reservado
-  to: String                      // Ciudad de destino del tramo reservado
+  to: String ,                     // Ciudad de destino del tramo reservado
+  reservedAt: { type: Date }       // ⬅️ Nueva fecha/hora de reserva
 }, { _id: false });
 
 const segmentSchema = new mongoose.Schema({
   from: { type: String, required: true },
   to: { type: String, required: true },
-  price: { type: Number, required: true },
-  departureTime: { type: String, required: true },
-  arrivalTime: { type: String, required: true }
+  price: { type: Number, required: false},
+  departureTime: { type: String, required:false },
+  arrivalTime: { type: String, required:false }
 }, { _id: false });
 
 const routeBlockGeneratedSchema = new mongoose.Schema({
@@ -38,5 +39,6 @@ const routeBlockGeneratedSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
 
 module.exports = mongoose.model('RouteBlockGenerated', routeBlockGeneratedSchema);

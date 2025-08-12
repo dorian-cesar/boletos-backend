@@ -44,22 +44,20 @@ exports.generateRouteBlock = async (req, res) => {
       });
     }
 
-    // 5. Generar TODAS las combinaciones posibles de tramos (no solo consecutivos)
-    // Ahora cada segmento tendrá: from, to, price, departureTime, arrivalTime
-    const allSegments = [];
-    for (let i = 0; i < stopsOrdered.length - 1; i++) {
-      for (let j = i + 1; j < stopsOrdered.length; j++) {
-        const key = `${stopsOrdered[i].name}-${stopsOrdered[j].name}`;
-        allSegments.push({
-          from: stopsOrdered[i].name,
-          to: stopsOrdered[j].name,
-          price: prices?.[key] ?? 0,
-          departureTime: departureTimes?.[key] ?? null,
-          arrivalTime: arrivalTimes?.[key] ?? null
-        });
-      }
-    }
-
+  // 5. Generar TODAS las combinaciones posibles de tramos (no solo consecutivos)
+const allSegments = [];
+for (let i = 0; i < stopsOrdered.length - 1; i++) {
+  for (let j = i + 1; j < stopsOrdered.length; j++) {
+    const key = `${stopsOrdered[i].name}-${stopsOrdered[j].name}`;
+    allSegments.push({
+      from: stopsOrdered[i].name,
+      to: stopsOrdered[j].name,
+      price: prices ? (prices[key] ?? null) : null,
+      departureTime: departureTimes ? (departureTimes[key] ?? null) : null,
+      arrivalTime: arrivalTimes ? (arrivalTimes[key] ?? null) : null
+    });
+  }
+}
     // 6. Crear seatMatrix con todos los tramos para cada asiento
     const seatMatrix = {};
     for (const seatId of seats) {
@@ -96,8 +94,6 @@ exports.generateRouteBlock = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
-
-
 
 exports.getAvailability = async (req, res) => {
   try {
@@ -159,9 +155,6 @@ exports.getAvailability = async (req, res) => {
   }
 };
 
-
-
-
 // Reservar asiento en tramo específico
 exports.reserveSeat = async (req, res) => {
   try {
@@ -220,6 +213,7 @@ exports.reserveSeat = async (req, res) => {
         s.occupied = true;
         s.passengerName = passengerName || null;
         s.passengerDocument = passengerDocument || null;
+        s.reservedAt = new Date();
       }
     });
 
@@ -229,6 +223,7 @@ exports.reserveSeat = async (req, res) => {
       seatSegments[longSegmentIndex].occupied = true;
       seatSegments[longSegmentIndex].passengerName = passengerName || null;
       seatSegments[longSegmentIndex].passengerDocument = passengerDocument || null;
+      seatSegments[longSegmentIndex].reservedAt = new Date();
     } else {
       // Si no existe, agregarlo al arreglo para reflejar la reserva completa
       seatSegments.push({
@@ -251,8 +246,6 @@ exports.reserveSeat = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
-
-
 
 // Consultar matriz de asientos actualizada
 exports.getSeatMatrix = async (req, res) => {
@@ -317,6 +310,8 @@ exports.releaseSeat = async (req, res) => {
         s.occupied = false;
         s.passengerName = null;
         s.passengerDocument = null;
+        s.reservedAt = null;
+       
       }
     });
 
@@ -326,6 +321,7 @@ exports.releaseSeat = async (req, res) => {
       seatSegments[longSegmentIndex].occupied = false;
       seatSegments[longSegmentIndex].passengerName = null;
       seatSegments[longSegmentIndex].passengerDocument = null;
+      
     }
 
     service.seatMatrix.set(seatNumber, seatSegments);
@@ -375,7 +371,6 @@ exports.searchServices = async (req, res) => {
   }
 };
 
-// Nueva API: obtener todas las combinaciones de ciudades (origen-destino) para una fecha
 exports.getCityCombinationsByDate = async (req, res) => {
   try {
     const { date } = req.query;
@@ -387,40 +382,103 @@ exports.getCityCombinationsByDate = async (req, res) => {
     // Buscar todos los servicios generados en esa fecha
     const services = await RouteBlockGenerated.find({
       date: new Date(date)
-    }).populate({
-      path: 'routeBlock',
-      select: 'stops'
-    });
+    })
+      .populate({
+        path: 'routeBlock',
+        select: 'stops'
+      })
+      .lean();
 
     if (!services.length) {
       return res.status(404).json({ message: 'No se encontraron servicios para la fecha indicada' });
     }
 
-    // Usaremos un Set para evitar duplicados
-    const combinationsSet = new Set();
+    const result = [];
 
-    services.forEach(service => {
+    for (const service of services) {
       const stopsOrdered = [...service.routeBlock.stops].sort((a, b) => a.order - b.order);
 
-      // Generar TODAS las combinaciones posibles de origen-destino
       for (let i = 0; i < stopsOrdered.length - 1; i++) {
         for (let j = i + 1; j < stopsOrdered.length; j++) {
-          const combo = `${stopsOrdered[i].name} -> ${stopsOrdered[j].name}`;
-          combinationsSet.add(combo);
+          const from = stopsOrdered[i].name;
+          const to = stopsOrdered[j].name;
+
+          // Buscar el segmento correspondiente dentro de service.segments
+          const segmentData = service.segments?.find(
+            seg => seg.from === from && seg.to === to
+          ) || {};
+
+          // Estado de asientos para este tramo
+          const seatStatus = [];
+          for (const [seatNumber, segments] of Object.entries(service.seatMatrix || {})) {
+            const segmentInfo = segments.find(s => s.from === from && s.to === to);
+            if (segmentInfo) {
+              seatStatus.push({
+                seatNumber: segmentInfo.seatNumber,
+                occupied: segmentInfo.occupied,
+                passengerName: segmentInfo.passengerName,
+                passengerDocument: segmentInfo.passengerDocument
+              });
+            }
+          }
+
+          result.push({
+            date: service.date,
+            from,
+            to,
+            price: segmentData.price ?? null,
+            departureTime: segmentData.departureTime ?? null,
+            arrivalTime: segmentData.arrivalTime ?? null,
+            availableSeats: seatStatus.filter(s => !s.occupied).length,
+            //seatMatrix: seatStatus
+          });
         }
       }
-    });
+    }
 
-    // Convertir a arreglo y formatear como objetos
-    const combinations = Array.from(combinationsSet).map(combo => {
-      const [from, to] = combo.split(' -> ');
-      return { from, to };
-    });
-
-    res.json({ date, combinations });
+    res.json({ date, routes: result });
 
   } catch (error) {
     console.error('Error obteniendo combinaciones de ciudades:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// controllers/routeBlockGeneratedController.js
+
+exports.updateSegments = async (req, res) => {
+  try {
+    const { id } = req.params; // ID de RouteBlockGenerated
+    const { segments } = req.body; // Array de segmentos con from, to, price, departureTime, arrivalTime
+
+    if (!Array.isArray(segments) || segments.length === 0) {
+      return res.status(400).json({ message: 'Debe enviar un arreglo no vacío de segmentos' });
+    }
+
+    const service = await RouteBlockGenerated.findById(id);
+    if (!service) {
+      return res.status(404).json({ message: 'Servicio no encontrado' });
+    }
+
+    // Recorrer cada segmento enviado y actualizar el que corresponda en service.segments
+    segments.forEach(updatedSeg => {
+      const index = service.segments.findIndex(seg =>
+        seg.from === updatedSeg.from && seg.to === updatedSeg.to
+      );
+
+      if (index !== -1) {
+        service.segments[index].price = updatedSeg.price ?? service.segments[index].price;
+        service.segments[index].departureTime = updatedSeg.departureTime ?? service.segments[index].departureTime;
+        service.segments[index].arrivalTime = updatedSeg.arrivalTime ?? service.segments[index].arrivalTime;
+      }
+    });
+
+    await service.save();
+
+    res.json({ message: 'Segmentos actualizados correctamente', segments: service.segments });
+
+  } catch (error) {
+    console.error('Error actualizando segmentos:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

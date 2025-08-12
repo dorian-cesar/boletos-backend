@@ -82,6 +82,8 @@ mongoose.connect(MONGO_URI, {
     console.log("✅ Conectado a MongoDB");
     console.log(MONGO_URI);
     startScheduler();
+    require('./cron/releaseExpiredSeats');
+
     app.listen(3000, () => console.log('🚍 Servidor corriendo en puerto 3000'));
 }).catch(err => {
     console.error('❌ Error conectando a MongoDB', err);
