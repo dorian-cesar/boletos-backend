@@ -26,7 +26,8 @@ const generatedServiceSchema = new mongoose.Schema({
     reserved: Boolean,
     paid: Boolean,
     authCode: String,
-    floor: Number // opcional si quieres distinguir primer y segundo piso
+    floor: Number, // opcional si quieres distinguir primer y segundo piso
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   }],
   price: Number,
   company: String,

@@ -18,7 +18,7 @@ async function holdSeat(serviceId, seatNumber, userId) {
     throw new Error('Asiento no disponible');
 }
 
-async function confirmSeat(serviceId, seatNumber, authCode) {
+async function confirmSeat(serviceId, seatNumber, authCode, userId) {
     const service = await GeneratedService.findById(serviceId);
     if (!service) throw new Error('Servicio no encontrado');
 
@@ -29,6 +29,7 @@ async function confirmSeat(serviceId, seatNumber, authCode) {
     seat.paid = true;
     seat.holdUntil = null;
     seat.authCode = authCode;
+    seat.userId = userId;
     await service.save();
 
     return { success: true };

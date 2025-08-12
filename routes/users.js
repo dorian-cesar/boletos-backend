@@ -47,8 +47,8 @@ router.post("/login", async (req, res) => {
 // Obtener todos los usuarios (protegido, solo admin)
 router.get("/", verifyToken, async (req, res) => {
   // if (req.user.role !== 'admin') return res.status(403).json({ error: 'Acceso denegado' });
-  const users = await User.find();
-  // const users = await User.find().select("-password");
+  // const users = await User.find();
+  const users = await User.find().select("-password");
   res.json(users);
 });
 
