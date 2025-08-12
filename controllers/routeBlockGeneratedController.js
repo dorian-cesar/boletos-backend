@@ -369,4 +369,53 @@ exports.searchServices = async (req, res) => {
   }
 };
 
+// Nueva API: obtener todas las combinaciones de ciudades (origen-destino) para una fecha
+exports.getCityCombinationsByDate = async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: 'Debe especificar la fecha (date)' });
+    }
+
+    // Buscar todos los servicios generados en esa fecha
+    const services = await RouteBlockGenerated.find({
+      date: new Date(date)
+    }).populate({
+      path: 'routeBlock',
+      select: 'stops'
+    });
+
+    if (!services.length) {
+      return res.status(404).json({ message: 'No se encontraron servicios para la fecha indicada' });
+    }
+
+    // Usaremos un Set para evitar duplicados
+    const combinationsSet = new Set();
+
+    services.forEach(service => {
+      const stopsOrdered = [...service.routeBlock.stops].sort((a, b) => a.order - b.order);
+
+      // Generar TODAS las combinaciones posibles de origen-destino
+      for (let i = 0; i < stopsOrdered.length - 1; i++) {
+        for (let j = i + 1; j < stopsOrdered.length; j++) {
+          const combo = `${stopsOrdered[i].name} -> ${stopsOrdered[j].name}`;
+          combinationsSet.add(combo);
+        }
+      }
+    });
+
+    // Convertir a arreglo y formatear como objetos
+    const combinations = Array.from(combinationsSet).map(combo => {
+      const [from, to] = combo.split(' -> ');
+      return { from, to };
+    });
+
+    res.json({ date, combinations });
+
+  } catch (error) {
+    console.error('Error obteniendo combinaciones de ciudades:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
 
