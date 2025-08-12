@@ -5,7 +5,7 @@ const routeBlockGeneratedController = require('../controllers/routeBlockGenerate
 // POST /api/route-block-generated/generate
 router.post('/generate', routeBlockGeneratedController.generateRouteBlock);
 
-router.get('/generate', routeBlockGeneratedController.getAvailability);
+//router.get('/generate', routeBlockGeneratedController.getAvailability);
 
 router.get('/:id/availability', routeBlockGeneratedController.getAvailability);
 
@@ -15,5 +15,8 @@ router.post('/:id/release-seat', routeBlockGeneratedController.releaseSeat);
 router.get('/search', routeBlockGeneratedController.searchServices);
 
 router.get('/city-combinations', routeBlockGeneratedController.getCityCombinationsByDate);
+
+router.put('/routeBlockGenerated/:id/updateSegments', routeBlockGeneratedController.updateSegments);
+
 
 module.exports = router;
