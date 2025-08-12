@@ -14,4 +14,6 @@ router.get('/:id/seat-matrix', routeBlockGeneratedController.getSeatMatrix);
 router.post('/:id/release-seat', routeBlockGeneratedController.releaseSeat);
 router.get('/search', routeBlockGeneratedController.searchServices);
 
+router.get('/city-combinations', routeBlockGeneratedController.getCityCombinationsByDate);
+
 module.exports = router;
