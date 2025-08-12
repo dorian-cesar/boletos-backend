@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose'); // 👈 Falta esto
 const router = express.Router();
 const Bus = require('../models/Bus');
 const Layout = require('../models/Layout');

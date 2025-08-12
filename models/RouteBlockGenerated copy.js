@@ -9,14 +9,6 @@ const seatSchema = new mongoose.Schema({
   to: String                      // Ciudad de destino del tramo reservado
 }, { _id: false });
 
-const segmentSchema = new mongoose.Schema({
-  from: { type: String, required: true },
-  to: { type: String, required: true },
-  price: { type: Number, required: true },
-  departureTime: { type: String, required: true },
-  arrivalTime: { type: String, required: true }
-}, { _id: false });
-
 const routeBlockGeneratedSchema = new mongoose.Schema({
   routeBlock: { type: mongoose.Schema.Types.ObjectId, ref: 'RouteBlock', required: true },
   date: { type: Date, required: true },
@@ -29,8 +21,6 @@ const routeBlockGeneratedSchema = new mongoose.Schema({
     type: Map,
     of: [seatSchema]           // Array de ocupación por tramo
   },
-
-   segments: [segmentSchema],  // 👈 Aquí se guardan precios y horarios por tramo
 
   availableSeats: { type: Number }, // Campo calculado al crear
 

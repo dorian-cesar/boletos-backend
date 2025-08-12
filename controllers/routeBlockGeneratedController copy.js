@@ -5,10 +5,11 @@ const Layout = require('../models/Layout');
 
 exports.generateRouteBlock = async (req, res) => {
   try {
-    const { routeBlockId, date, time, layoutId, crew, prices, departureTimes, arrivalTimes } = req.body;
-    console.log(prices);
+    const { routeBlockId, date, time, layoutId, crew } = req.body;
+
     // 1. Obtener el bloque de ruta
     const routeBlock = await RouteBlock.findById(routeBlockId).populate('routeMaster');
+    console.log(routeBlock);
     if (!routeBlock) {
       return res.status(404).json({ message: 'RouteBlock no encontrado' });
     }
@@ -45,17 +46,12 @@ exports.generateRouteBlock = async (req, res) => {
     }
 
     // 5. Generar TODAS las combinaciones posibles de tramos (no solo consecutivos)
-    // Ahora cada segmento tendrá: from, to, price, departureTime, arrivalTime
     const allSegments = [];
     for (let i = 0; i < stopsOrdered.length - 1; i++) {
       for (let j = i + 1; j < stopsOrdered.length; j++) {
-        const key = `${stopsOrdered[i].name}-${stopsOrdered[j].name}`;
         allSegments.push({
           from: stopsOrdered[i].name,
-          to: stopsOrdered[j].name,
-          price: prices?.[key] ?? 0,
-          departureTime: departureTimes?.[key] ?? null,
-          arrivalTime: arrivalTimes?.[key] ?? null
+          to: stopsOrdered[j].name
         });
       }
     }
@@ -80,7 +76,6 @@ exports.generateRouteBlock = async (req, res) => {
       time,
       layout: layout._id,
       crew,
-      segments: allSegments, // 🔹 Guardamos la info de precios y horarios
       seatMatrix
     });
 
@@ -96,7 +91,6 @@ exports.generateRouteBlock = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
-
 
 
 exports.getAvailability = async (req, res) => {
