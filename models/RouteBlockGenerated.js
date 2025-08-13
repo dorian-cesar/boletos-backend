@@ -1,44 +1,48 @@
 const mongoose = require('mongoose');
 
 const seatSchema = new mongoose.Schema({
-  seatNumber: String,             // Ej: "1A"
-  occupied: Boolean,              // true si está ocupado
-  passengerName: String,          // Opcional
-  passengerDocument: String,      // Opcional
-  from: String,                   // Ciudad de origen del tramo reservado
-  to: String ,                     // Ciudad de destino del tramo reservado
-  reservedAt: { type: Date }       // ⬅️ Nueva fecha/hora de reserva
+  seatNumber: String,
+  occupied: Boolean,
+  passengerName: String,
+  passengerDocument: String,
+  reservedAt: { type: Date },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  authorizationCode: String,
+  from: String,
+  to: String
 }, { _id: false });
 
 const segmentSchema = new mongoose.Schema({
   from: { type: String, required: true },
   to: { type: String, required: true },
-  price: { type: Number, required: false},
-  departureTime: { type: String, required:false },
-  arrivalTime: { type: String, required:false }
+  price: { type: Number },
+  departureTime: { type: String },
+  arrivalTime: { type: String }
 }, { _id: false });
 
 const routeBlockGeneratedSchema = new mongoose.Schema({
   routeBlock: { type: mongoose.Schema.Types.ObjectId, ref: 'RouteBlock', required: true },
   date: { type: Date, required: true },
-  time: { type: String, required: true }, // Ej: "14:00"
+
+  // Antes: required: true, ahora opcional porque lo controlan los segments
+  time: { type: String, required: false },  
 
   bus: { type: mongoose.Schema.Types.ObjectId, ref: 'Bus' },
-  crew: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Chofer, auxiliar, etc.
+  layout: { type: mongoose.Schema.Types.ObjectId, ref: 'Layout' }, // 👈 NUEVO
+  crew: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
-  seatMatrix: {                    // Estado actual de cada asiento
+  seatMatrix: {
     type: Map,
-    of: [seatSchema]           // Array de ocupación por tramo
+    of: [seatSchema]
   },
 
-   segments: [segmentSchema],  // 👈 Aquí se guardan precios y horarios por tramo
+  segments: [segmentSchema],
 
-  availableSeats: { type: Number }, // Campo calculado al crear
+  availableSeats: { type: Number },
 
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, {
   timestamps: true
 });
-
 
 module.exports = mongoose.model('RouteBlockGenerated', routeBlockGeneratedSchema);

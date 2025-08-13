@@ -335,8 +335,8 @@ exports.releaseSeat = async (req, res) => {
   }
 };
 
-// controllers/serviceController.js
-exports.searchServices = async (req, res) => {
+
+exports.searchServicess = async (req, res) => {
   try {
     const { from, to, date } = req.query;
 
@@ -370,6 +370,62 @@ exports.searchServices = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
+exports.searchServices = async (req, res) => {
+  try {
+    const { from, to, date } = req.query;
+
+    if (!from || !to || !date) {
+      return res.status(400).json({ message: 'Debe especificar from, to y date' });
+    }
+
+    // Buscar todos los servicios con esa fecha
+    const services = await RouteBlockGenerated.find({
+      date: new Date(date)
+    })
+    .populate({
+      path: 'routeBlock',
+      select: 'stops'
+    })
+    .populate({
+      path: 'layout',
+      select: '_id name'
+    });
+
+    // Filtrar por paradas
+    const matchingServices = services.filter(service => {
+      const stops = [...service.routeBlock.stops].sort((a, b) => a.order - b.order);
+      const fromIndex = stops.findIndex(s => s.name === from);
+      const toIndex = stops.findIndex(s => s.name === to);
+      return fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex;
+    });
+
+    // Construir respuesta con datos extra
+    const results = matchingServices.map(service => {
+      // Buscar el segmento exacto que coincida
+      const matchingSegment = service.segments.find(seg => seg.from === from && seg.to === to);
+
+      return {
+        serviceId: service._id,
+        layoutId: service.layout ? service.layout._id : null,
+        layoutName: service.layout ? service.layout.name : null,
+        date: service.date,
+        from: matchingSegment ? matchingSegment.from : from,
+        to: matchingSegment ? matchingSegment.to : to,
+        price: matchingSegment ? matchingSegment.price : null,
+        departureTime: matchingSegment ? matchingSegment.departureTime : null,
+        arrivalTime: matchingSegment ? matchingSegment.arrivalTime : null
+      };
+    });
+
+    res.json({ services: results });
+
+  } catch (error) {
+    console.error('Error buscando servicios:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 
 exports.getCityCombinationsByDate = async (req, res) => {
   try {
@@ -444,7 +500,6 @@ exports.getCityCombinationsByDate = async (req, res) => {
   }
 };
 
-// controllers/routeBlockGeneratedController.js
 
 exports.updateSegments = async (req, res) => {
   try {
@@ -483,3 +538,174 @@ exports.updateSegments = async (req, res) => {
   }
 };
 
+exports.confirmPayment = async (req, res) => {
+  try {
+    const { id } = req.params; // routeBlockGeneratedId
+    const {
+      seatNumber,
+      from,
+      to,
+      passengerName,
+      passengerDocument,
+      userId,
+      authorizationCode
+    } = req.body;
+
+    if (!seatNumber || !from || !to || !userId || !authorizationCode) {
+      return res.status(400).json({ message: 'Faltan datos obligatorios: seatNumber, from, to, userId, authorizationCode' });
+    }
+
+    const service = await RouteBlockGenerated.findById(id).populate({
+      path: 'routeBlock',
+      select: 'stops'
+    });
+
+    if (!service) {
+      return res.status(404).json({ message: 'Servicio no encontrado' });
+    }
+
+    const stops = [...service.routeBlock.stops].sort((a, b) => a.order - b.order);
+    const fromIndex = stops.findIndex(s => s.name === from);
+    const toIndex = stops.findIndex(s => s.name === to);
+
+    if (fromIndex === -1 || toIndex === -1 || fromIndex >= toIndex) {
+      return res.status(400).json({ message: 'Paradas inválidas o en orden incorrecto' });
+    }
+
+    // Segmentos consecutivos que se deben confirmar
+    const segmentsToConfirm = [];
+    for (let i = fromIndex; i < toIndex; i++) {
+      segmentsToConfirm.push({
+        from: stops[i].name,
+        to: stops[i + 1].name
+      });
+    }
+
+    // Obtener segmentos actuales del asiento
+    const seatSegments = service.seatMatrix.get(seatNumber);
+    if (!seatSegments) {
+      return res.status(404).json({ message: 'Asiento no encontrado' });
+    }
+
+    // Confirmar cada segmento consecutivo
+    seatSegments.forEach(s => {
+      const shouldConfirm = segmentsToConfirm.some(seg => seg.from === s.from && seg.to === s.to);
+      if (shouldConfirm) {
+        s.occupied = true;
+        s.passengerName = passengerName || s.passengerName;
+        s.passengerDocument = passengerDocument || s.passengerDocument;
+        s.userId = userId;
+        s.authorizationCode = authorizationCode;
+        delete s.reservedAt; // Quita el tiempo de reserva
+      }
+    });
+
+    // Confirmar tramo largo (from → to)
+    const longSegmentIndex = seatSegments.findIndex(s => s.from === from && s.to === to);
+    if (longSegmentIndex >= 0) {
+      seatSegments[longSegmentIndex].occupied = true;
+      seatSegments[longSegmentIndex].passengerName = passengerName || seatSegments[longSegmentIndex].passengerName;
+      seatSegments[longSegmentIndex].passengerDocument = passengerDocument || seatSegments[longSegmentIndex].passengerDocument;
+      seatSegments[longSegmentIndex].userId = userId;
+      seatSegments[longSegmentIndex].authorizationCode = authorizationCode;
+      delete seatSegments[longSegmentIndex].reservedAt;
+    }
+
+    service.seatMatrix.set(seatNumber, seatSegments);
+    await service.save();
+
+    res.json({
+      message: 'Pago confirmado y asiento asegurado',
+      seatNumber,
+      from,
+      to,
+      userId,
+      authorizationCode
+    });
+
+  } catch (error) {
+    console.error('Error al confirmar pago:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+exports.generateRouteBlockFuture = async (req, res) => {
+  try {
+    const { routeBlockId, startDate, daysOfWeek, layoutId, crew, segments, totalDays = 14 } = req.body;
+
+    // Validar bloque de ruta
+    const routeBlock = await RouteBlock.findById(routeBlockId).populate('routeMaster');
+    if (!routeBlock) {
+      return res.status(404).json({ message: 'RouteBlock no encontrado' });
+    }
+
+    if (!routeBlock.routeMaster || !Array.isArray(routeBlock.routeMaster.stops)) {
+      return res.status(400).json({ message: 'El routeMaster no tiene paradas definidas' });
+    }
+
+    // Obtener layout y asientos
+    const layout = await Layout.findById(layoutId);
+    if (!layout) {
+      return res.status(404).json({ message: 'Layout no encontrado' });
+    }
+
+    const seats = [];
+    if (layout.floor1?.seatMap) {
+      layout.floor1.seatMap.forEach(row => row.forEach(seatId => seatId && seats.push(seatId)));
+    }
+    if (layout.floor2?.seatMap) {
+      layout.floor2.seatMap.forEach(row => row.forEach(seatId => seatId && seats.push(seatId)));
+    }
+
+    // Validar días de la semana recibidos
+    if (!Array.isArray(daysOfWeek) || daysOfWeek.some(d => d < 0 || d > 6)) {
+      return res.status(400).json({ message: 'daysOfWeek debe ser un array con valores de 0 a 6 (0=Domingo, 6=Sábado)' });
+    }
+
+    const start = new Date(startDate);
+    const generatedServices = [];
+
+    for (let dayOffset = 0; dayOffset < totalDays; dayOffset++) {
+      const currentDate = new Date(start);
+      currentDate.setDate(start.getDate() + dayOffset);
+
+      if (!daysOfWeek.includes(currentDate.getDay())) continue; // Solo días permitidos
+
+      // Crear seatMatrix por cada asiento y segmento
+      const seatMatrix = {};
+      for (const seatId of seats) {
+        seatMatrix[seatId] = segments.map(seg => ({
+          seatNumber: seatId,
+          occupied: false,
+          passengerName: null,
+          passengerDocument: null,
+          from: seg.from,
+          to: seg.to
+        }));
+      }
+
+      // Crear y guardar servicio
+      const generatedService = new RouteBlockGenerated({
+        routeBlock: routeBlockId,
+        date: currentDate,
+        layout: layout._id,
+        crew,
+        segments,
+        seatMatrix
+      });
+
+      await generatedService.save();
+      generatedServices.push(generatedService);
+    }
+
+    res.status(201).json({
+      message: 'Servicios futuros generados correctamente',
+      total: generatedServices.length,
+      data: generatedServices
+    });
+
+  } catch (error) {
+    console.error('Error al generar servicios futuros:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
