@@ -13,7 +13,7 @@ router.get("/paid-only-seats", async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ error: "userId no es un ObjectId válido" });
   }
-
+  console.log("userId de /paid-only-seats", userId);
   try {
     // Buscar servicios que tengan al menos un asiento pagado por este usuario
     const services = await GeneratedService.find({
