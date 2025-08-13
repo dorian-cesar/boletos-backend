@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const GeneratedService = require("../models/GeneratedService");
-const User = require("../models/User");
+const BusLayout = require('../models/Layout');
 const { holdSeat, confirmSeat, releaseSeat } = require("../utils/seatManager");
 
 const verifyToken = require("../middlewares/auth");
@@ -10,49 +10,100 @@ const verifyToken = require("../middlewares/auth");
 // GET /api/seats/paid-only-seats
 router.get("/paid-only-seats", async (req, res) => {
   const { userId } = req.query;
-
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).json({ error: "userId no es un ObjectId válido." });
+    return res.status(400).json({ error: "userId no es un ObjectId válido" });
   }
 
   try {
-    const paidSeats = await GeneratedService.aggregate([
-      {
-        // Filtrar documentos que tengan 'seats' como array y al menos un asiento pagado
-        $match: {
-          seats: { $exists: true, $type: "array" },
-          "seats.paid": true,
-        },
-      },
-      {
-        // Descomponer array seats
-        $unwind: "$seats",
-      },
-      {
-        // Filtrar asientos pagados y con el userId especificado
-        $match: {
-          "seats.paid": true,
-          "seats.userId": new mongoose.Types.ObjectId(userId),
-        },
-      },
-      {
-        // Proyectar los campos necesarios
-        $project: {
-          _id: 1,
-          origin: 1,
-          destination: 1,
-          date: 1,
-          departureTime: 1,
-          seat: "$seats",
-        },
-      },
-    ]);
+    // Buscar servicios que tengan al menos un asiento pagado por este usuario
+    const services = await GeneratedService.find({
+      "seats.paid": true,
+      "seats.userId": new mongoose.Types.ObjectId(userId),
+    });
+    const results = await Promise.all(
+      services.map(async (service) => {
+        const layoutDoc = await BusLayout.findOne({ name: service.layout });
+        if (!layoutDoc) {
+          return null; // Si no hay layout, lo saltamos
+        }
 
-    res.json(paidSeats);
+        const structuredSeats = { firstFloor: [], secondFloor: [] };
+
+        // Piso 1
+        if (layoutDoc.floor1?.seatMap) {
+          for (let row of layoutDoc.floor1.seatMap) {
+            const rowSeats = row
+              .filter((seatNumber) => seatNumber !== "")
+              .map((seatNumber) => {
+                const seatData = service.seats.find(
+                  (s) =>
+                    s.number === seatNumber &&
+                    s.paid === true &&
+                    String(s.userId) === userId
+                );
+                return seatData
+                  ? {
+                      ...seatData.toObject(),
+                      price: service.priceFirst || service.price || 0,
+                      floor: "floor1",
+                    }
+                  : null;
+              })
+              .filter(Boolean); // quitar nulos
+            if (rowSeats.length) structuredSeats.firstFloor.push(rowSeats);
+          }
+        }
+
+        // Piso 2
+        if (layoutDoc.floor2?.seatMap) {
+          for (let row of layoutDoc.floor2.seatMap) {
+            const rowSeats = row
+              .filter((seatNumber) => seatNumber !== "")
+              .map((seatNumber) => {
+                const seatData = service.seats.find(
+                  (s) =>
+                    s.number === seatNumber &&
+                    s.paid === true &&
+                    String(s.userId) === userId
+                );
+                return seatData
+                  ? {
+                      ...seatData.toObject(),
+                      price: service.priceSecond || service.price || 0,
+                      floor: "floor2",
+                    }
+                  : null;
+              })
+              .filter(Boolean);
+            if (rowSeats.length) structuredSeats.secondFloor.push(rowSeats);
+          }
+        }
+
+        return {
+          serviceId: service._id,
+          origin: service.origin,
+          destination: service.destination,
+          date: service.date,
+          departureTime: service.departureTime,
+          arrivalDate: service.arrivalDate,
+          arrivalTime: service.arrivalTime,
+          company: service.company,
+          busTypeDescription: service.busTypeDescription,
+          tipo_Asiento_piso_1: layoutDoc.tipo_Asiento_piso_1,
+          tipo_Asiento_piso_2: layoutDoc.tipo_Asiento_piso_2,
+          layout: layoutDoc.name,
+          pisos: layoutDoc.pisos,
+          capacidad: layoutDoc.capacidad,
+          seats: structuredSeats,
+        };
+      })
+    );
+
+    res.json(results.filter(Boolean)); // quitar nulls por layouts no encontrados
   } catch (error) {
-    console.error("Error al obtener solo asientos pagados:", error);
+    console.error("Error en /paid-only-seats:", error);
     res.status(500).json({
-      error: "Error interno del servidor al obtener solo asientos pagados.",
+      error: "Error interno del servidor al obtener asientos pagados.",
     });
   }
 });
