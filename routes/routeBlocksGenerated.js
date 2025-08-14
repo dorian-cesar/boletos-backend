@@ -18,5 +18,10 @@ router.get('/city-combinations', routeBlockGeneratedController.getCityCombinatio
 
 router.put('/routeBlockGenerated/:id/updateSegments', routeBlockGeneratedController.updateSegments);
 
+// Confirmar pago (añade userId y authorizationCode)
+router.post('/:id/confirm-payment', routeBlockGeneratedController.confirmPayment);
+
+router.post('/generate-future', routeBlockGeneratedController.generateRouteBlockFuture);
+
 
 module.exports = router;
