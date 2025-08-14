@@ -83,6 +83,8 @@ router.get("/paid-only-seats", async (req, res) => {
           serviceId: service._id,
           origin: service.origin,
           destination: service.destination,
+          terminalOrigin: service.terminalOrigin,
+          terminalDestination: service.terminalDestination,
           date: service.date,
           departureTime: service.departureTime,
           arrivalDate: service.arrivalDate,
