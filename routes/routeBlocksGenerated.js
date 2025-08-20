@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const routeBlockGeneratedController = require('../controllers/routeBlockGeneratedController');
 
+router.get('/get-ids', routeBlockGeneratedController.getAllGeneratedIds);
 // POST /api/route-block-generated/generate
 router.post('/generate', routeBlockGeneratedController.generateRouteBlock);
 
