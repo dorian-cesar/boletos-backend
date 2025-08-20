@@ -5,6 +5,7 @@ const cityController = require('../controllers/cityController');
 // CRUD
 router.get('/', cityController.getAllCities);
 router.get('/fromGenerated/:generatedId', cityController.getCitiesFromGenerated);
+router.get('/fromAllRouteMasters', cityController.getCitiesFromAllRouteMasters);
 router.get('/:id', cityController.getCityById);
 router.post('/', cityController.createCity);
 router.put('/:id', cityController.updateCity);

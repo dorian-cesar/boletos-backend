@@ -1,5 +1,6 @@
 const City = require("../models/City");
 const RouteBlockGenerated = require("../models/RouteBlockGenerated");
+const RouteMaster = require("../models/RouteMaster");
 
 // Obtener todas las ciudades
 exports.getAllCities = async (req, res) => {
@@ -22,6 +23,7 @@ exports.getCityById = async (req, res) => {
   }
 };
 
+// Obtener ciudades por ID de routeBlocksGenerated
 exports.getCitiesFromGenerated = async (req, res) => {
   try {
     const { generatedId } = req.params;
@@ -55,6 +57,52 @@ exports.getCitiesFromGenerated = async (req, res) => {
   } catch (err) {
     console.error("Error en getCitiesFromGenerated:", err);
     res.status(500).json({ error: "Error al obtener las ciudades" });
+  }
+};
+
+// Obtener ciudades de todas las RouteMaster
+exports.getCitiesFromAllRouteMasters = async (req, res) => {
+  try {
+    // 1. Obtener todas las rutas maestras
+    const routes = await RouteMaster.find();
+
+    if (!routes || routes.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No se encontraron rutas maestras" });
+    }
+
+    const allCitiesMap = {};
+
+    // 2. Recorrer cada ruta maestra
+    routes.forEach((route) => {
+      const stopsOrdered = [...route.stops].sort((a, b) => a.order - b.order);
+
+      for (let i = 0; i < stopsOrdered.length - 1; i++) {
+        for (let j = i + 1; j < stopsOrdered.length; j++) {
+          const from = stopsOrdered[i].name;
+          const to = stopsOrdered[j].name;
+
+          if (!allCitiesMap[from]) allCitiesMap[from] = [];
+          if (!allCitiesMap[from].includes(to)) allCitiesMap[from].push(to);
+        }
+      }
+    });
+
+    // 3. Transformar a arreglo de objetos
+    const result = Object.keys(allCitiesMap).map((origen) => ({
+      origen,
+      destinos: allCitiesMap[origen],
+    }));
+
+    res.json(result);
+  } catch (err) {
+    console.error("Error en getCitiesFromAllRouteMasters:", err);
+    res
+      .status(500)
+      .json({
+        error: "Error al obtener las ciudades desde todas las rutas maestras",
+      });
   }
 };
 
